@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Carga de Documento - ACJSignature</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-container": "#d6e5eb",
+                    "primary-fixed": "#b7eaff",
+                    "surface-container-low": "#f0f4f5",
+                    "secondary-fixed-dim": "#bac9cf",
+                    "on-error": "#ffffff",
+                    "primary-container": "#005c72",
+                    "outline": "#70787d",
+                    "on-tertiary-fixed-variant": "#274f29",
+                    "primary": "#004354",
+                    "tertiary-fixed": "#c0efba",
+                    "surface-container-highest": "#dfe3e4",
+                    "primary-fixed-dim": "#8dd0e9",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#2c3132",
+                    "tertiary": "#1d4520",
+                    "on-tertiary-fixed": "#002105",
+                    "on-tertiary": "#ffffff",
+                    "surface": "#f6fafb",
+                    "tertiary-container": "#345d35",
+                    "on-surface": "#181c1d",
+                    "surface-dim": "#d6dbdc",
+                    "on-secondary-container": "#59676c",
+                    "tertiary-fixed-dim": "#a4d2a0",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#001f28",
+                    "surface-variant": "#dfe3e4",
+                    "surface-tint": "#18667d",
+                    "outline-variant": "#bfc8cc",
+                    "background": "#f6fafb",
+                    "surface-container": "#eaeef0",
+                    "on-secondary-fixed-variant": "#3b494e",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#d6e5eb",
+                    "on-surface-variant": "#3f484c",
+                    "on-primary-container": "#8fd2ec",
+                    "on-background": "#181c1d",
+                    "on-secondary-fixed": "#101d22",
+                    "surface-bright": "#f6fafb",
+                    "surface-container-high": "#e5e9ea",
+                    "on-primary-fixed-variant": "#004e61",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#a6d4a2",
+                    "on-error-container": "#93000a",
+                    "secondary": "#536166",
+                    "inverse-primary": "#8dd0e9",
+                    "error": "#ba1a1a",
+                    "inverse-on-surface": "#edf1f2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .dashed-border {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23BFC8CC' stroke-width='2' stroke-dasharray='8%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            border-radius: 12px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body text-on-surface min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-[#f6fafb] dark:bg-slate-950 flex items-center justify-between px-4 h-16 w-full sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-[#004354] dark:text-teal-400 p-2 hover:bg-[#f0f4f5]/50 dark:hover:bg-slate-800 transition-colors active:scale-95 duration-200">
+                arrow_back
+            </button>
+<h1 class="font-['Manrope'] font-bold text-[#004354] dark:text-teal-400 tracking-tight text-lg">ACJSignature</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-500">info</span>
+</div>
+</header>
+<main class="flex-1 flex flex-col px-6 pt-8 pb-32 max-w-2xl mx-auto w-full">
+<!-- Step Indicator -->
+<div class="mb-10">
+<div class="flex items-center justify-between mb-4">
+<span class="font-headline font-bold text-primary text-sm tracking-wider">PASO 1 DE 3</span>
+<span class="font-label font-semibold text-secondary text-xs uppercase tracking-widest">Preparación</span>
+</div>
+<div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-1/3 rounded-full"></div>
+</div>
+</div>
+<!-- Headline -->
+<div class="mb-10">
+<h2 class="font-headline font-bold text-3xl text-on-surface tracking-tight mb-2">Cargar documento</h2>
+<p class="text-on-surface-variant font-body leading-relaxed">Sube el archivo PDF que deseas firmar digitalmente. El documento debe estar en formato PDF y no superar los 25MB.</p>
+</div>
+<!-- Upload Area (Bento-style card) -->
+<div class="flex-1 flex flex-col items-center justify-center p-8 dashed-border bg-surface-container-low transition-all duration-300 hover:bg-surface-container-high group cursor-pointer relative overflow-hidden">
+<!-- Subtle Decorative Element -->
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-20 h-20 bg-surface-container-lowest rounded-xl shadow-[0_8px_24px_rgba(24,28,29,0.04)] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-primary text-4xl" data-weight="fill">upload_file</span>
+</div>
+<h3 class="font-headline font-semibold text-xl text-on-surface mb-2">Selecciona un archivo PDF</h3>
+<p class="text-on-surface-variant text-sm mb-8 text-center max-w-[240px]">Arrastra y suelta tu archivo aquí o haz clic para explorar</p>
+<button class="bg-surface-container-lowest text-primary px-6 py-2.5 rounded-lg font-label font-bold text-xs tracking-widest border-2 border-primary/10 hover:border-primary/30 transition-all active:scale-95">
+                    EXAMINAR ARCHIVOS
+                </button>
+</div>
+<!-- Hidden Input -->
+<input accept=".pdf" class="hidden" type="file"/>
+</div>
+<!-- Document Requirements / Security Info (Asymmetric Detail) -->
+<div class="mt-8 flex gap-4">
+<div class="flex-1 p-4 bg-surface-container-lowest rounded-xl flex items-start gap-4">
+<span class="material-symbols-outlined text-tertiary text-xl">verified_user</span>
+<div>
+<h4 class="font-label font-bold text-on-surface text-xs uppercase tracking-wider mb-1">Encriptación AES-256</h4>
+<p class="text-on-surface-variant text-[11px] leading-normal">Tus documentos están protegidos con estándares de seguridad bancaria.</p>
+</div>
+</div>
+<div class="flex-1 p-4 bg-surface-container-lowest rounded-xl flex items-start gap-4">
+<span class="material-symbols-outlined text-primary text-xl">history</span>
+<div>
+<h4 class="font-label font-bold text-on-surface text-xs uppercase tracking-wider mb-1">Trazabilidad Total</h4>
+<p class="text-on-surface-variant text-[11px] leading-normal">Generamos un log de auditoría completo para cada firma realizada.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Bottom Action -->
+<div class="fixed bottom-0 left-0 w-full p-6 bg-surface/80 backdrop-blur-xl border-t border-surface-container-highest z-50">
+<div class="max-w-2xl mx-auto">
+<button class="w-full h-14 bg-gradient-to-r from-[#ba1a1a] to-[#d32f2f] text-white rounded-lg font-label font-bold text-sm tracking-widest flex items-center justify-center gap-3 shadow-[0_8px_24px_rgba(186,26,26,0.2)] active:scale-[0.98] transition-all">
+                SIGUIENTE PASO
+                <span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- BottomNavBar (Hidden for Transactional flow as per instructions) -->
+<!-- The BottomNavBar is suppressed here to prioritize the focused task of document upload -->
+</body></html>

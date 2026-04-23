@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-container": "#d6e5eb",
+                    "primary-fixed": "#b7eaff",
+                    "surface-container-low": "#f0f4f5",
+                    "secondary-fixed-dim": "#bac9cf",
+                    "on-error": "#ffffff",
+                    "primary-container": "#005c72",
+                    "outline": "#70787d",
+                    "on-tertiary-fixed-variant": "#274f29",
+                    "primary": "#004354",
+                    "tertiary-fixed": "#c0efba",
+                    "surface-container-highest": "#dfe3e4",
+                    "primary-fixed-dim": "#8dd0e9",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#2c3132",
+                    "tertiary": "#1d4520",
+                    "on-tertiary-fixed": "#002105",
+                    "on-tertiary": "#ffffff",
+                    "surface": "#f6fafb",
+                    "tertiary-container": "#345d35",
+                    "on-surface": "#181c1d",
+                    "surface-dim": "#d6dbdc",
+                    "on-secondary-container": "#59676c",
+                    "tertiary-fixed-dim": "#a4d2a0",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#001f28",
+                    "surface-variant": "#dfe3e4",
+                    "surface-tint": "#18667d",
+                    "outline-variant": "#bfc8cc",
+                    "background": "#f6fafb",
+                    "surface-container": "#eaeef0",
+                    "on-secondary-fixed-variant": "#3b494e",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#d6e5eb",
+                    "on-surface-variant": "#3f484c",
+                    "on-primary-container": "#8fd2ec",
+                    "on-background": "#181c1d",
+                    "on-secondary-fixed": "#101d22",
+                    "surface-bright": "#f6fafb",
+                    "surface-container-high": "#e5e9ea",
+                    "on-primary-fixed-variant": "#004e61",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#a6d4a2",
+                    "on-error-container": "#93000a",
+                    "secondary": "#536166",
+                    "inverse-primary": "#8dd0e9",
+                    "error": "#ba1a1a",
+                    "inverse-on-surface": "#edf1f2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .signature-gradient {
+            background: linear-gradient(135deg, #004354 0%, #005c72 100%);
+        }
+        .cta-gradient {
+            background: linear-gradient(135deg, #ba1a1a 0%, #8e0010 100%);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f6fafb;
+        }
+        h1, h2, h3, .headline {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-[#f6fafb] flex items-center justify-between px-4 h-16 w-full sticky top-0 z-40">
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined text-[#004354] hover:bg-[#f0f4f5]/50 transition-colors p-2 rounded-lg active:scale-95 duration-200" data-icon="arrow_back">arrow_back</button>
+<h1 class="font-['Manrope'] font-bold text-[#004354] tracking-tight text-lg">ACJSignature</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined text-slate-500 p-2" data-icon="search">search</button>
+<button class="material-symbols-outlined text-slate-500 p-2" data-icon="more_vert">more_vert</button>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-4 py-6">
+<!-- Section Header -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<p class="text-on-secondary-container font-label text-xs font-semibold uppercase tracking-widest mb-1">REPOSITORIO DIGITAL</p>
+<h2 class="text-3xl font-headline font-bold text-primary">Documentos Firmados</h2>
+</div>
+<button class="cta-gradient text-white px-6 py-3 rounded-xl font-label text-xs font-bold uppercase tracking-wider shadow-lg active:scale-95 transition-transform">
+                Firmar Documento
+            </button>
+</div>
+<!-- Glassmorphism Stats Bento -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+<div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-primary">
+<p class="text-on-surface-variant text-sm font-medium mb-1">Total Firmados</p>
+<p class="text-3xl font-headline font-extrabold text-primary">124</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl">
+<p class="text-on-surface-variant text-sm font-medium mb-1">Pendientes</p>
+<p class="text-3xl font-headline font-extrabold text-secondary">08</p>
+</div>
+<div class="bg-primary text-white p-6 rounded-xl flex items-center justify-between">
+<div>
+<p class="opacity-80 text-sm font-medium mb-1">Estado de Seguridad</p>
+<p class="text-xl font-headline font-bold">Protegido</p>
+</div>
+<span class="material-symbols-outlined text-4xl opacity-50" data-icon="shield_with_heart" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+</div>
+</div>
+<!-- Documents List -->
+<div class="space-y-4">
+<div class="flex items-center px-4 mb-2 text-on-surface-variant font-label text-[10px] uppercase tracking-widest font-bold">
+<div class="flex-1">Nombre del Documento</div>
+<div class="w-32 hidden md:block">Fecha de Firma</div>
+<div class="w-24 text-right">Acciones</div>
+</div>
+<!-- Document Card 1 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex items-center group hover:bg-white transition-all shadow-[0_4px_12px_rgba(24,28,29,0.02)]">
+<div class="w-12 h-12 bg-secondary-container rounded-xl flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-primary" data-icon="description">description</span>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-on-surface font-headline font-semibold truncate">Contrato_Prestacion_Servicios_V2.pdf</h3>
+<p class="text-on-surface-variant text-xs font-body block md:hidden">14 Oct 2023</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-fixed-variant">VERIFICADO</span>
+<span class="text-[10px] text-outline flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="lock">lock</span>
+                            AES-256
+                        </span>
+</div>
+</div>
+<div class="w-32 hidden md:block text-on-surface-variant text-sm font-body">
+                    14 Oct 2023
+                </div>
+<div class="w-24 flex justify-end gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors text-primary">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Document Card 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex items-center group hover:bg-white transition-all shadow-[0_4px_12px_rgba(24,28,29,0.02)]">
+<div class="w-12 h-12 bg-secondary-container rounded-xl flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-primary" data-icon="picture_as_pdf">picture_as_pdf</span>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-on-surface font-headline font-semibold truncate">Acuerdo_Confidencialidad_NDA.pdf</h3>
+<p class="text-on-surface-variant text-xs font-body block md:hidden">10 Oct 2023</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-fixed-variant">VERIFICADO</span>
+</div>
+</div>
+<div class="w-32 hidden md:block text-on-surface-variant text-sm font-body">
+                    10 Oct 2023
+                </div>
+<div class="w-24 flex justify-end gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors text-primary">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Document Card 3 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex items-center group hover:bg-white transition-all shadow-[0_4px_12px_rgba(24,28,29,0.02)]">
+<div class="w-12 h-12 bg-secondary-container rounded-xl flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-primary" data-icon="description">description</span>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-on-surface font-headline font-semibold truncate">Anexo_Tecnico_Propuesta.pdf</h3>
+<p class="text-on-surface-variant text-xs font-body block md:hidden">05 Oct 2023</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-tertiary-fixed text-on-tertiary-fixed-variant">VERIFICADO</span>
+<span class="text-[10px] text-outline flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="history">history</span>
+                            Historial
+                        </span>
+</div>
+</div>
+<div class="w-32 hidden md:block text-on-surface-variant text-sm font-body">
+                    05 Oct 2023
+                </div>
+<div class="w-24 flex justify-end gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors text-primary">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Premium Placeholder for empty state awareness (not shown in this view) -->
+<!-- In case list is empty, this would appear -->
+<!-- 
+        <div class="mt-20 text-center">
+            <div class="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outlined text-4xl text-outline-variant" data-icon="folder_off">folder_off</span>
+            </div>
+            <h3 class="text-xl font-headline font-bold text-primary mb-2">Sin documentos firmados</h3>
+            <p class="text-on-surface-variant mb-8 max-w-xs mx-auto">Comienza digitalizando tus contratos de forma segura y legal.</p>
+            <button class="cta-gradient text-white px-10 py-4 rounded-xl font-label text-sm font-bold uppercase tracking-widest shadow-xl">
+                Firmar Mi Primer Documento
+            </button>
+        </div>
+        -->
+<!-- Security Badge -->
+<div class="mt-16 bg-surface-container-high/50 p-6 rounded-2xl flex flex-col md:flex-row items-center gap-6">
+<div class="w-16 h-16 shrink-0">
+<img alt="Security badge" class="w-full h-full object-contain" data-alt="Abstract geometric emblem in deep teal with sharp architectural lines representing digital security and integrity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXYGJqzjqcQm2vr636UGZOI-Z9EAeV3xM_kZD3wxxcu7Z-lyGSTCmEnEtY1Ndzwu5hOs3LlPrT0-mG-3kFLjJ20q9hP3SDg9peTH1zY6XJcuriiVtmHN6QQSSmwMZY07HL9IvIAtpuMSuNIQu38rBSBlw0tp4zAB9MwGG4dA8o7HjcRsF1oPTAdxm6geO5IXfw2HA6NgqeIcWPs5_GdLFYzOylXaXJhqMtH6DgGy6xOty7GVVFoPe-UWHUuKovGWMeAWTLorFxpHY"/>
+</div>
+<div>
+<h4 class="font-headline font-bold text-primary text-lg">Integridad Notarial Digital</h4>
+<p class="text-sm text-on-surface-variant">Todos los documentos listados cuentan con sellado de tiempo y firma digital avanzada, cumpliendo con los estándares legales internacionales de no repudio.</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-2 pb-safe bg-[#f6fafb] z-50 border-t border-[#dfe3e4] shadow-[0_-8px_24px_rgba(24,28,29,0.06)]">
+<div class="flex flex-col items-center justify-center text-slate-500 px-5 py-1 hover:text-[#005c72] transition-colors">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-['Inter'] font-medium text-[12px]">Inicio</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-[#d6e5eb] text-[#004354] rounded-xl px-5 py-1">
+<span class="material-symbols-outlined mb-1" data-icon="description" style="font-variation-settings: 'FILL' 1;">description</span>
+<span class="font-['Inter'] font-medium text-[12px]">Documentos</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 px-5 py-1 hover:text-[#005c72] transition-colors">
+<span class="material-symbols-outlined mb-1" data-icon="settings">settings</span>
+<span class="font-['Inter'] font-medium text-[12px]">Configuración</span>
+</div>
+</nav>
+</body></html>

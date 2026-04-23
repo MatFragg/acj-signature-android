@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ACJSignature - Posicionar Firma</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-container": "#d6e5eb",
+                    "primary-fixed": "#b7eaff",
+                    "surface-container-low": "#f0f4f5",
+                    "secondary-fixed-dim": "#bac9cf",
+                    "on-error": "#ffffff",
+                    "primary-container": "#005c72",
+                    "outline": "#70787d",
+                    "on-tertiary-fixed-variant": "#274f29",
+                    "primary": "#004354",
+                    "tertiary-fixed": "#c0efba",
+                    "surface-container-highest": "#dfe3e4",
+                    "primary-fixed-dim": "#8dd0e9",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#2c3132",
+                    "tertiary": "#1d4520",
+                    "on-tertiary-fixed": "#002105",
+                    "on-tertiary": "#ffffff",
+                    "surface": "#f6fafb",
+                    "tertiary-container": "#345d35",
+                    "on-surface": "#181c1d",
+                    "surface-dim": "#d6dbdc",
+                    "on-secondary-container": "#59676c",
+                    "tertiary-fixed-dim": "#a4d2a0",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#001f28",
+                    "surface-variant": "#dfe3e4",
+                    "surface-tint": "#18667d",
+                    "outline-variant": "#bfc8cc",
+                    "background": "#f6fafb",
+                    "surface-container": "#eaeef0",
+                    "on-secondary-fixed-variant": "#3b494e",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#d6e5eb",
+                    "on-surface-variant": "#3f484c",
+                    "on-primary-container": "#8fd2ec",
+                    "on-background": "#181c1d",
+                    "on-secondary-fixed": "#101d22",
+                    "surface-bright": "#f6fafb",
+                    "surface-container-high": "#e5e9ea",
+                    "on-primary-fixed-variant": "#004e61",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#a6d4a2",
+                    "on-error-container": "#93000a",
+                    "secondary": "#536166",
+                    "inverse-primary": "#8dd0e9",
+                    "error": "#ba1a1a",
+                    "inverse-on-surface": "#edf1f2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .signature-drag-area {
+            background-image: radial-gradient(#bfc8cc 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-[#f6fafb] dark:bg-slate-950 flex items-center justify-between px-4 h-16 w-full sticky top-0 z-50">
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined text-[#004354] dark:text-teal-400 p-2 hover:bg-[#f0f4f5]/50 rounded-full transition-colors active:scale-95 duration-200">
+                arrow_back
+            </button>
+<h1 class="font-['Manrope'] font-bold text-[#004354] dark:text-teal-400 tracking-tight text-lg">ACJSignature</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-500">more_vert</span>
+</div>
+</header>
+<main class="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 pt-6 pb-24">
+<!-- Instructional Header -->
+<div class="mb-8 text-center md:text-left">
+<h2 class="font-headline text-2xl font-bold text-on-surface mb-2">Posicionar Firma</h2>
+<p class="text-on-surface-variant font-body">Arrastre la posición de la firma hacia el lugar deseado del documento.</p>
+</div>
+<!-- Document Preview Canvas -->
+<div class="flex-1 relative bg-surface-container-low rounded-xl overflow-hidden shadow-sm flex justify-center p-4 md:p-8">
+<div class="relative bg-white w-full max-w-[600px] aspect-[1/1.41] shadow-2xl rounded-sm border border-outline-variant/10 p-10 flex flex-col gap-6 overflow-hidden">
+<!-- Watermark Background -->
+<div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+<span class="material-symbols-outlined text-[300px]">gavel</span>
+</div>
+<!-- Fake Document Content -->
+<div class="w-24 h-3 bg-surface-container-highest rounded-full"></div>
+<div class="space-y-4 mt-4">
+<div class="w-full h-2 bg-surface-container-highest rounded-full"></div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full"></div>
+<div class="w-3/4 h-2 bg-surface-container-highest rounded-full"></div>
+</div>
+<div class="mt-8 space-y-4">
+<div class="w-full h-2 bg-surface-container-highest rounded-full"></div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full"></div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full"></div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full"></div>
+<div class="w-1/2 h-2 bg-surface-container-highest rounded-full"></div>
+</div>
+<div class="mt-8 space-y-4">
+<div class="w-full h-2 bg-surface-container-highest rounded-full"></div>
+<div class="w-5/6 h-2 bg-surface-container-highest rounded-full"></div>
+</div>
+<!-- Interactive Signature Box (Simulating Drag-and-Drop Position) -->
+<div class="absolute bottom-32 right-12 w-64 p-4 border-2 border-error bg-error-container/20 rounded-md cursor-move shadow-lg flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-bold text-error uppercase tracking-wider">Firma Digital</span>
+<span class="material-symbols-outlined text-error text-sm">open_with</span>
+</div>
+<div class="text-on-surface font-headline font-semibold text-xs py-1">
+                        Firmado digitalmente por:<br/>
+<span class="text-error">ALEJANDRO CASTRO JIMÉNEZ</span>
+</div>
+<div class="text-[8px] text-on-surface-variant font-medium">
+                        Fecha: 24/05/2024 14:32:10 UTC<br/>
+                        ID: 8F2G-99XK-L01P
+                    </div>
+</div>
+<!-- Document Footer Details -->
+<div class="absolute bottom-10 left-10 right-10 flex justify-between items-end">
+<div class="w-16 h-16 bg-surface-container-highest/30 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-outline-variant text-4xl">qr_code_2</span>
+</div>
+<div class="text-[10px] text-outline text-right">
+                        Página 1 de 1<br/>
+                        Verificado por ACJSignature Trust Network
+                    </div>
+</div>
+</div>
+</div>
+<!-- Floating Action Area (Mobile Optimized) -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container/80 backdrop-blur-md p-4 flex flex-col gap-3 md:relative md:bg-transparent md:p-0 md:mt-8 md:flex-row md:justify-end">
+<button class="w-full md:w-auto px-8 py-4 bg-surface-container-highest text-on-surface-variant font-label font-semibold rounded-lg hover:bg-surface-variant transition-all active:scale-95">
+                CANCELAR
+            </button>
+<button class="w-full md:w-auto px-12 py-4 bg-gradient-to-br from-error to-[#93000a] text-white font-label font-bold rounded-lg shadow-xl shadow-error/20 hover:brightness-110 transition-all active:scale-95 tracking-widest">
+                CONTINUAR
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Suppressed as per focused task rules, but template preserved for shell structure if needed) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-2 pb-safe bg-[#f6fafb] border-t border-[#dfe3e4] shadow-[0_-8px_24px_rgba(24,28,29,0.06)] md:hidden hidden">
+<div class="flex flex-col items-center justify-center text-slate-500 px-5 py-1">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Inter'] font-medium text-[12px]">Inicio</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-[#d6e5eb] text-[#004354] rounded-xl px-5 py-1">
+<span class="material-symbols-outlined">description</span>
+<span class="font-['Inter'] font-medium text-[12px]">Documentos</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 px-5 py-1">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-['Inter'] font-medium text-[12px]">Configuración</span>
+</div>
+</nav>
+</body></html>

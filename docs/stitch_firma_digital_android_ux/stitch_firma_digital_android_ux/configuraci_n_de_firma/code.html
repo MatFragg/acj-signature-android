@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-container": "#d6e5eb",
+                    "primary-fixed": "#b7eaff",
+                    "surface-container-low": "#f0f4f5",
+                    "secondary-fixed-dim": "#bac9cf",
+                    "on-error": "#ffffff",
+                    "primary-container": "#005c72",
+                    "outline": "#70787d",
+                    "on-tertiary-fixed-variant": "#274f29",
+                    "primary": "#004354",
+                    "tertiary-fixed": "#c0efba",
+                    "surface-container-highest": "#dfe3e4",
+                    "primary-fixed-dim": "#8dd0e9",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#2c3132",
+                    "tertiary": "#1d4520",
+                    "on-tertiary-fixed": "#002105",
+                    "on-tertiary": "#ffffff",
+                    "surface": "#f6fafb",
+                    "tertiary-container": "#345d35",
+                    "on-surface": "#181c1d",
+                    "surface-dim": "#d6dbdc",
+                    "on-secondary-container": "#59676c",
+                    "tertiary-fixed-dim": "#a4d2a0",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#001f28",
+                    "surface-variant": "#dfe3e4",
+                    "surface-tint": "#18667d",
+                    "outline-variant": "#bfc8cc",
+                    "background": "#f6fafb",
+                    "surface-container": "#eaeef0",
+                    "on-secondary-fixed-variant": "#3b494e",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#d6e5eb",
+                    "on-surface-variant": "#3f484c",
+                    "on-primary-container": "#8fd2ec",
+                    "on-background": "#181c1d",
+                    "on-secondary-fixed": "#101d22",
+                    "surface-bright": "#f6fafb",
+                    "surface-container-high": "#e5e9ea",
+                    "on-primary-fixed-variant": "#004e61",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#a6d4a2",
+                    "on-error-container": "#93000a",
+                    "secondary": "#536166",
+                    "inverse-primary": "#8dd0e9",
+                    "error": "#ba1a1a",
+                    "inverse-on-surface": "#edf1f2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .signature-preview-area {
+            background-image: radial-gradient(#dfe3e4 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-[#f6fafb] dark:bg-slate-950 flex items-center justify-between px-4 h-16 w-full sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<button class="hover:bg-[#f0f4f5]/50 dark:hover:bg-slate-800 transition-colors p-2 rounded-full active:scale-95 duration-200">
+<span class="material-symbols-outlined text-[#004354] dark:text-teal-400">arrow_back</span>
+</button>
+<h1 class="font-['Manrope'] font-bold text-[#004354] dark:text-teal-400 tracking-tight text-lg">ACJSignature</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-500">verified_user</span>
+</div>
+</header>
+<main class="max-w-2xl mx-auto px-4 py-8 space-y-8">
+<!-- Main Section Title -->
+<div class="space-y-1">
+<h2 class="font-headline text-2xl font-bold text-on-surface">Configuración de Firma</h2>
+<p class="text-on-surface-variant text-sm">Personaliza cómo aparecerá tu identidad en los documentos legales.</p>
+</div>
+<!-- Section: Logo -->
+<section class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">image</span>
+<h3 class="font-headline font-semibold text-lg">Logo para la firma</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Upload Option -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border-2 border-dashed border-outline-variant flex flex-col items-center justify-center gap-3 text-center cursor-pointer hover:bg-surface-container-low transition-colors group">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">cloud_upload</span>
+</div>
+<div>
+<p class="font-semibold text-sm">Subir nuevo archivo</p>
+<p class="text-xs text-on-surface-variant">PNG o JPG (máx. 2MB)</p>
+</div>
+</div>
+<!-- Existing Image Selector -->
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col gap-3">
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Usar existente</p>
+<div class="flex gap-2 overflow-x-auto pb-2">
+<div class="min-w-[80px] h-20 rounded-lg bg-surface-container-highest border-2 border-primary overflow-hidden relative">
+<img class="w-full h-full object-contain p-2" data-alt="abstract geometric corporate logo with professional blue and grey tones on a white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcB8Ya4U05AH4Ck_XfP4VKr-Hac1ElC65q6BFW7s0l6OGFA6XlUQM8CgQCDbZfVMDB2WHgfEy5vKcIO74oNPg7WaQorgDOZ5H_XowifjIAi5KIwqM-y4qzSqYcMjWC1Dr1PoZe8unjk8ZKGWv_r_9Pm_DYHNd2x5xrMc8taa17uDsPfE4urMvmlGivyH4K-to-Bi49XTM1y9Q61ompaDLQ0AtMcVigPHdcxKhmc4OoiO7zx97SJPm9x8h_MHP5RXi1QGIZV_jchkU"/>
+<div class="absolute top-1 right-1 bg-primary text-on-primary rounded-full p-0.5">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+</div>
+<div class="min-w-[80px] h-20 rounded-lg bg-surface-container-highest overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+<img class="w-full h-full object-contain p-2" data-alt="minimalist modern typography logo for a legal or consulting firm in black and white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7dGK1IlJzs6LhWauSu3g-6dqjLh4nTFQK3PDTyoF6tlPRXkWfgO5LyeOFUXMOUZrzQT0rVRm1vr5BFSLUbCNBx5uoyPiSxYPIidghHWxWg8VtQJFLdlxo9IyeclVoR_lM8IRzC4OF0mipEXuFT1HD5SQ2vOJUParM3JOlXaxxFSRo-0osLZ8e5nfvfGv6TTV0zJrKUsBE-sFoQHmcem5M0AIH-btWyHDu5e5Bbe0LqeDRXxqi713ll1TcTXlswOT_QZlLDuAC9qw"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Data Fields -->
+<section class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">badge</span>
+<h3 class="font-headline font-semibold text-lg">Datos para la firma</h3>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl space-y-6">
+<!-- Checkbox Group -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<label class="flex items-center gap-4 p-4 bg-surface-container-lowest rounded-lg cursor-pointer hover:shadow-sm transition-shadow">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<p class="font-semibold text-sm">Mostrar Empresa</p>
+<p class="text-xs text-on-surface-variant">ACJ Consultores S.A.</p>
+</div>
+</label>
+<label class="flex items-center gap-4 p-4 bg-surface-container-lowest rounded-lg cursor-pointer hover:shadow-sm transition-shadow">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<p class="font-semibold text-sm">Mostrar Cargo</p>
+<p class="text-xs text-on-surface-variant">Director Jurídico</p>
+</div>
+</label>
+</div>
+<!-- Detail Inputs -->
+<div class="space-y-4 pt-2">
+<div class="relative">
+<label class="text-[10px] font-bold text-primary uppercase absolute -top-2 left-2 bg-surface-container-low px-1 z-10">Nombre Completo</label>
+<input class="w-full bg-transparent border-b-2 border-surface-container-highest focus:border-primary outline-none py-3 px-2 font-medium transition-colors" type="text" value="Alejandro C. Jaramillo"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Preview -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">visibility</span>
+<h3 class="font-headline font-semibold text-lg">Vista previa</h3>
+</div>
+<span class="text-[10px] font-bold text-tertiary bg-tertiary-fixed px-2 py-0.5 rounded uppercase">Documento Seguro</span>
+</div>
+<div class="signature-preview-area border border-outline-variant/30 rounded-2xl p-8 flex flex-col items-center justify-center min-h-[200px] relative overflow-hidden">
+<div class="bg-white/80 backdrop-blur-md p-8 rounded-xl shadow-sm border border-white flex flex-col items-center text-center gap-4 max-w-sm">
+<img class="h-12 w-auto opacity-80" data-alt="digital representation of a corporate logo on a document signature block" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTUeFyfioakabU4z5XRXnZhflJW88LiXUDe6iBdOe_Qfoh7KSxJibQ2PDQsOAnIkzvx1Y41Hw-XvZkvHlqqn6To2wa__pCO7x3kiGiQ8kMdFq6Ua6NgsC1HQXm3nnFAtF--zTZysySeXcW7GkjFc--nq76zQvVGwFVGNSriadry7jmb4i0xDFWNNFR-ft36O_XIV2d7ClAcbzyDZWzPujE8_9iqhqBjYxVl80HH0eToGm26gDmtsDRIOYyKKMoANYHk6KJmEUo7Ec"/>
+<div class="space-y-1">
+<p class="font-['Manrope'] font-bold text-xl italic text-on-surface">Alejandro C. Jaramillo</p>
+<div class="h-px bg-outline-variant/50 w-full"></div>
+<p class="text-xs font-medium text-on-surface-variant">Firmado digitalmente • ACJ Consultores S.A.</p>
+<p class="text-[9px] text-slate-400 font-mono">ID: 8F2D-99AA-1C04-BB22</p>
+</div>
+</div>
+<!-- Decorative Security Seal -->
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl text-primary/5 rotate-12 select-none" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</section>
+<!-- Save Button -->
+<div class="pt-4 pb-12">
+<button class="w-full bg-[#B0526F] hover:bg-[#94435b] text-white font-label font-bold py-4 rounded-xl shadow-lg shadow-[#B0526F]/20 transition-all active:scale-[0.98] uppercase tracking-widest text-sm">
+                GUARDAR CAMBIOS
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-2 pb-safe bg-[#f6fafb] dark:bg-slate-950 z-50 rounded-t-none border-t border-[#dfe3e4] dark:border-slate-800 shadow-[0_-8px_24px_rgba(24,28,29,0.06)]">
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-5 py-1 hover:text-[#005c72] dark:hover:text-teal-300 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Inter'] font-medium text-[12px]">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-5 py-1 hover:text-[#005c72] dark:hover:text-teal-300 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-['Inter'] font-medium text-[12px]">Documentos</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#d6e5eb] dark:bg-teal-900/30 text-[#004354] dark:text-teal-200 rounded-xl px-5 py-1 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Inter'] font-medium text-[12px]">Configuración</span>
+</a>
+</nav>
+</body></html>
