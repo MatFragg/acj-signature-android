@@ -7,5 +7,7 @@ data class CertificadosState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val showPasswordDialog: Boolean = false,
+    val showPinDialog: Boolean = false,
     val importSuccess: String? = null,
 )
+

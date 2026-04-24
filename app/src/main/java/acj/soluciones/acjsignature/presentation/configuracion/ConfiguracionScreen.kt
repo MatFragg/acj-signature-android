@@ -256,20 +256,20 @@ fun ConfiguracionScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Nombre del firmante (del certificado)",
+                                text = "Nombre del firmante",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = White,
                             )
                             if (state.incluirCargo) {
                                 Text(
-                                    text = "Cargo",
+                                    text = "Empresa",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = PinkLight,
                                 )
                             }
                             if (state.incluirEmpresa) {
                                 Text(
-                                    text = "Empresa",
+                                    text = "Cargo",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = PinkLight,
                                 )

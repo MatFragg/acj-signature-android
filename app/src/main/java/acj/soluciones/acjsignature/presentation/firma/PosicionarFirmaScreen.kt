@@ -8,10 +8,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,6 +26,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -109,8 +113,82 @@ fun PosicionarFirmaScreen(
                 val pdfY = ((offsetY / containerSize.height) * state.pdfPageHeight).roundToInt()
                     .coerceIn(margin, (state.pdfPageHeight - state.sigIdealHeight - margin).coerceAtLeast(margin))
                 
-                viewModel.firmarDocumento(cert, pdfX, pdfY, state.sigIdealWidth, state.sigIdealHeight)
+                viewModel.solicitarFirma(cert, pdfX, pdfY, state.sigIdealWidth, state.sigIdealHeight)
             }
+        )
+    }
+
+    // PIN verification dialog
+    if (state.showPinDialog) {
+        var pinInput by remember { mutableStateOf("") }
+
+        AlertDialog(
+            onDismissRequest = {
+                viewModel.onCancelPin()
+                pinInput = ""
+            },
+            icon = {
+                Icon(
+                    Icons.Filled.Lock,
+                    contentDescription = null,
+                    tint = DeepPurple,
+                    modifier = Modifier.size(32.dp),
+                )
+            },
+            title = {
+                Text(
+                    "Verificar PIN",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        "Ingresa el PIN de 6 dígitos de tu certificado para proceder con la firma.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextBody,
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = pinInput,
+                        onValueChange = { newValue ->
+                            if (newValue.length <= 6 && newValue.all { it.isDigit() }) {
+                                pinInput = newValue
+                            }
+                        },
+                        label = { Text("PIN") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        isError = state.pinError != null,
+                        supportingText = {
+                            state.pinError?.let {
+                                Text(it, color = Error)
+                            }
+                        },
+                    )
+                }
+            },
+            confirmButton = {
+                ACJPrimaryButton(
+                    text = "Verificar",
+                    onClick = {
+                        viewModel.onPinVerificado(pinInput)
+                        pinInput = ""
+                    },
+                    enabled = pinInput.length == 6,
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    viewModel.onCancelPin()
+                    pinInput = ""
+                }) {
+                    Text("Cancelar", color = TextMuted)
+                }
+            },
         )
     }
 

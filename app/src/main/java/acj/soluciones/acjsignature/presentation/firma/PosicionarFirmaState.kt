@@ -33,5 +33,10 @@ data class PosicionarFirmaState(
     
     // Dimensiones ideales calculadas para el sello (en unidades PDF)
     val sigIdealWidth: Int = 210,
-    val sigIdealHeight: Int = 55
+    val sigIdealHeight: Int = 55,
+
+    // PIN verification dialog state
+    val showPinDialog: Boolean = false,
+    val pinError: String? = null,
 )
+

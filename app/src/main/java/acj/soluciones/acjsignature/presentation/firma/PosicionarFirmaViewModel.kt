@@ -165,7 +165,56 @@ class PosicionarFirmaViewModel @Inject constructor(
         }
     }
 
-    fun firmarDocumento(certificado: Certificado, pdfX: Int, pdfY: Int, anchoVisible: Int, altoVisible: Int) {
+    // ─── PIN-gated signing flow ─────────────────────────────────────────────
+
+    /**
+     * Parámetros temporales de firma. Se guardan mientras el usuario
+     * ingresa su PIN en el diálogo de verificación.
+     */
+    private data class FirmaParams(
+        val certificado: Certificado,
+        val pdfX: Int,
+        val pdfY: Int,
+        val anchoVisible: Int,
+        val altoVisible: Int,
+    )
+
+    private var pendingFirmaParams: FirmaParams? = null
+
+    /**
+     * Punto de entrada público: en vez de firmar directamente,
+     * abre el diálogo de PIN para verificar la identidad del usuario.
+     */
+    fun solicitarFirma(certificado: Certificado, pdfX: Int, pdfY: Int, anchoVisible: Int, altoVisible: Int) {
+        pendingFirmaParams = FirmaParams(certificado, pdfX, pdfY, anchoVisible, altoVisible)
+        _state.update { it.copy(showPinDialog = true, pinError = null) }
+    }
+
+    /**
+     * Callback del diálogo de PIN. Verifica el PIN contra el almacenado
+     * y procede con la firma si es correcto.
+     */
+    fun onPinVerificado(pin: String) {
+        val params = pendingFirmaParams ?: return
+
+        viewModelScope.launch {
+            val valid = firmaRepository.verificarPinCertificado(params.certificado.alias, pin)
+            if (valid) {
+                _state.update { it.copy(showPinDialog = false, pinError = null) }
+                pendingFirmaParams = null
+                firmarDocumento(params.certificado, params.pdfX, params.pdfY, params.anchoVisible, params.altoVisible)
+            } else {
+                _state.update { it.copy(pinError = "PIN incorrecto") }
+            }
+        }
+    }
+
+    fun onCancelPin() {
+        pendingFirmaParams = null
+        _state.update { it.copy(showPinDialog = false, pinError = null) }
+    }
+
+    private fun firmarDocumento(certificado: Certificado, pdfX: Int, pdfY: Int, anchoVisible: Int, altoVisible: Int) {
         val currentState = _state.value
         val archivo = currentState.archivoPdf ?: return
 
@@ -254,3 +303,4 @@ class PosicionarFirmaViewModel @Inject constructor(
         return (lineH * (1 + nLines + eLines + cLines + 1 + 1) + 5)
     }
 }
+

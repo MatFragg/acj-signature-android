@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Base64
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
+import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -63,5 +64,40 @@ class P12StorageManager @Inject constructor(
         return certDir.listFiles { file -> file.extension == "p12" || file.extension == "pfx" }
             ?.map { it.nameWithoutExtension }
             ?: emptyList()
+    }
+
+    // ─── PIN Management ──────────────────────────────────────────────────────
+
+    /**
+     * Guarda el hash SHA-256 del PIN asociado al certificado.
+     * El PIN nunca se almacena en texto plano.
+     */
+    fun savePinHash(alias: String, pin: String) {
+        val hash = hashPin(pin)
+        prefs.edit().putString("${alias}_pin_hash", hash).apply()
+    }
+
+    /**
+     * Verifica que el PIN ingresado coincida con el almacenado.
+     * Retorna false si no existe PIN configurado para el alias.
+     */
+    fun verifyPin(alias: String, pin: String): Boolean {
+        val storedHash = prefs.getString("${alias}_pin_hash", null) ?: return false
+        val inputHash = hashPin(pin)
+        return storedHash == inputHash
+    }
+
+    /**
+     * Indica si el certificado ya tiene un PIN configurado.
+     * Útil para futura funcionalidad de cambio/recuperación de PIN.
+     */
+    fun hasPinConfigured(alias: String): Boolean {
+        return prefs.getString("${alias}_pin_hash", null) != null
+    }
+
+    private fun hashPin(pin: String): String {
+        return MessageDigest.getInstance("SHA-256")
+            .digest(pin.toByteArray())
+            .joinToString("") { "%02x".format(it) }
     }
 }

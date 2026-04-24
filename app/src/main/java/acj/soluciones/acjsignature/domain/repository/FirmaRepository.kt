@@ -22,8 +22,15 @@ interface FirmaRepository {
 
     /**
      * Importa un certificado a la caja fuerte de la app.
+     * Almacena también el hash del [pin] de 6 dígitos asociado.
      */
-    suspend fun importarCertificado(bytes: ByteArray, password: String, alias: String): Result<Unit>
+    suspend fun importarCertificado(bytes: ByteArray, password: String, alias: String, pin: String): Result<Unit>
+
+    /**
+     * Verifica que el [pin] ingresado coincida con el almacenado
+     * para el certificado identificado por [alias].
+     */
+    suspend fun verificarPinCertificado(alias: String, pin: String): Boolean
 
     /**
      * Firma el documento descrito en [documentoFirma] y devuelve

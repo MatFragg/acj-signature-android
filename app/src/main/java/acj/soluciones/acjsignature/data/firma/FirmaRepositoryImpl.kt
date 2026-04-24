@@ -58,7 +58,7 @@ class FirmaRepositoryImpl @Inject constructor(
 
     // ─── Certificados ────────────────────────────────────────────────────────
     
-    override suspend fun importarCertificado(bytes: ByteArray, password: String, alias: String): Result<Unit> =
+    override suspend fun importarCertificado(bytes: ByteArray, password: String, alias: String, pin: String): Result<Unit> =
         withContext(Dispatchers.IO) {
             runCatching {
                 // Validar que la contraseña y los bytes sirvan nativamente
@@ -67,6 +67,9 @@ class FirmaRepositoryImpl @Inject constructor(
                 
                 // Guardarlo físicamente usando nuestro Manager
                 p12StorageManager.saveCertificate(alias, bytes, password)
+                
+                // Guardar el hash del PIN de 6 dígitos asociado al certificado
+                p12StorageManager.savePinHash(alias, pin)
             }.fold(
                 onSuccess = { Result.Success(Unit) },
                 onFailure = { Result.Error("Error al importar: Contraseña incorrecta o archivo dañado.", it) }
@@ -102,6 +105,13 @@ class FirmaRepositoryImpl @Inject constructor(
                 onSuccess = { Result.Success(it) },
                 onFailure = { Result.Error("Error al listar certificados: ${it.message}", it) }
             )
+        }
+
+    // ─── PIN Verification ─────────────────────────────────────────────────────
+
+    override suspend fun verificarPinCertificado(alias: String, pin: String): Boolean =
+        withContext(Dispatchers.IO) {
+            p12StorageManager.verifyPin(alias, pin)
         }
 
     // ─── Firma ────────────────────────────────────────────────────────────────

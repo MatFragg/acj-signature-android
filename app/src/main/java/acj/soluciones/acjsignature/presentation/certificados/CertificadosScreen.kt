@@ -20,11 +20,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Warning
@@ -53,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -75,6 +78,11 @@ fun CertificadosScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var password by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+
+    // PIN creation state
+    var pin by remember { mutableStateOf("") }
+    var pinConfirm by remember { mutableStateOf("") }
+    var pinError by remember { mutableStateOf<String?>(null) }
 
     // MIME types expandidos para asegurar que los `.p12` o `.pfx` siempre sean seleccionables
     val p12MimeTypes = arrayOf(
@@ -176,6 +184,122 @@ fun CertificadosScreen(
                 TextButton(onClick = {
                     viewModel.onCancelImport()
                     password = ""
+                }) {
+                    Text("Cancelar", color = TextMuted)
+                }
+            },
+        )
+    }
+
+    // PIN creation dialog
+    if (state.showPinDialog) {
+        val pinIsValid = pin.length == 6 && pin.all { it.isDigit() }
+        val pinsMatch = pin == pinConfirm
+        val canConfirm = pinIsValid && pinsMatch
+
+        AlertDialog(
+            onDismissRequest = {
+                viewModel.onCancelPin()
+                pin = ""
+                pinConfirm = ""
+                pinError = null
+            },
+            icon = {
+                Icon(
+                    Icons.Filled.Lock,
+                    contentDescription = null,
+                    tint = DeepPurple,
+                    modifier = Modifier.size(32.dp),
+                )
+            },
+            title = {
+                Text(
+                    "Crear PIN de Seguridad",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        "Crea un PIN de 6 dígitos numéricos para proteger el uso de este certificado. Se te solicitará cada vez que firmes un documento.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextBody,
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = pin,
+                        onValueChange = { newValue ->
+                            // Solo permitir dígitos, máximo 6
+                            if (newValue.length <= 6 && newValue.all { it.isDigit() }) {
+                                pin = newValue
+                                pinError = null
+                            }
+                        },
+                        label = { Text("PIN (6 dígitos)") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        isError = pin.isNotEmpty() && !pinIsValid,
+                        supportingText = {
+                            if (pin.isNotEmpty() && !pinIsValid) {
+                                Text("El PIN debe tener exactamente 6 dígitos", color = Error)
+                            }
+                        },
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = pinConfirm,
+                        onValueChange = { newValue ->
+                            if (newValue.length <= 6 && newValue.all { it.isDigit() }) {
+                                pinConfirm = newValue
+                                pinError = null
+                            }
+                        },
+                        label = { Text("Confirmar PIN") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        isError = pinConfirm.isNotEmpty() && !pinsMatch,
+                        supportingText = {
+                            if (pinConfirm.isNotEmpty() && !pinsMatch) {
+                                Text("Los PINs no coinciden", color = Error)
+                            }
+                        },
+                    )
+
+                    pinError?.let {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(it, color = Error, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            },
+            confirmButton = {
+                ACJPrimaryButton(
+                    text = "Confirmar PIN",
+                    onClick = {
+                        if (canConfirm) {
+                            viewModel.onPinConfirmed(pin)
+                            pin = ""
+                            pinConfirm = ""
+                            pinError = null
+                        }
+                    },
+                    enabled = canConfirm,
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    viewModel.onCancelPin()
+                    pin = ""
+                    pinConfirm = ""
+                    pinError = null
                 }) {
                     Text("Cancelar", color = TextMuted)
                 }
