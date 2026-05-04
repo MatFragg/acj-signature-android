@@ -50,11 +50,11 @@ import acj.soluciones.acjsignature.shared.ui.theme.*
  * Determina qué permisos de almacenamiento necesita solicitar la app
  * según la versión de Android del dispositivo.
  *
- * - Android 13+ (API 33): No necesita permisos de almacenamiento
- *   (SAF + app-specific storage son suficientes)
- * - Android 10-12 (API 29-32): READ_EXTERNAL_STORAGE solo si se
- *   necesita leer fuera de app-specific dirs
- * - Android 8-9 (API 26-28): READ_EXTERNAL_STORAGE + WRITE_EXTERNAL_STORAGE
+ * - Android 13+ (API 33): No necesita permisos de almacenamiento (SAF es suficiente).
+ * - Android 10-12 (API 29-32): READ_EXTERNAL_STORAGE.
+ * - Android 8-9 (API 26-28): READ_EXTERNAL_STORAGE + WRITE_EXTERNAL_STORAGE.
+ *
+ * @return Lista de strings con los manifiestos de permisos requeridos.
  */
 private fun getRequiredPermissions(): List<String> = when {
     Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> emptyList() // API 33+
@@ -68,12 +68,14 @@ private fun getRequiredPermissions(): List<String> = when {
 }
 
 /**
- * Composable gate que verifica permisos de almacenamiento al arrancar.
+ * Componente de seguridad que actúa como puerta de enlace para verificar permisos de almacenamiento.
+ * Si los permisos están concedidos, muestra el contenido principal; de lo contrario, presenta
+ * una pantalla de solicitud informativa y estilizada.
  *
- * Si ya están concedidos o no se necesitan (API 33+), renderiza [content] directamente.
- * Si faltan, muestra una pantalla branded pidiendo al usuario que los conceda.
- *
- * @param content El composable principal de la app (ej. AppNavGraph)
+ * @param content Árbol de componentes que se renderizará tras obtener los permisos.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
  */
 @Composable
 fun ACJStoragePermissionGate(
@@ -214,8 +216,16 @@ fun ACJStoragePermissionGate(
     }
 }
 
+/**
+ * Ítem informativo que explica una de las razones por las cuales se requiere el permiso.
+ *
+ * @param icon Icono descriptivo.
+ * @param title Título del motivo.
+ * @param description Explicación detallada.
+ */
 @Composable
 private fun PermissionReasonItem(
+
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
     description: String,

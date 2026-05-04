@@ -21,29 +21,38 @@ import java.io.File
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import java.security.Security
+import acj.soluciones.acjsignature.data.local.datastore.ConfigDataStore
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.fold
 
 /**
- * Implementación concreta de [FirmaRepository].
- * ÚNICA clase de la app que importa y usa acjfirmalib.
+ * Implementación concreta del repositorio de firma digital.
+ * Esta es la única clase de la aplicación que interactúa directamente con la biblioteca nativa acjfirmalib.
+ *
+ * @property context Contexto de la aplicación necesario para inicializar recursos de firma.
+ * @property p12StorageManager Gestor encargado de la persistencia de los archivos P12.
+ * @property configDataStore Almacén de configuraciones para determinar parámetros de validación (TSL).
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
  */
 @Singleton
 class FirmaRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val p12StorageManager: P12StorageManager,
+    private val configDataStore: ConfigDataStore,
 ) : FirmaRepository {
 
     init {
-        // Registrar BouncyCastle
+        // Registro de proveedores de seguridad y cargadores de recursos
         if (Security.getProvider("BC") == null) {
             Security.addProvider(BouncyCastleProvider())
         }
-        // Inicializar PdfBox-Android una sola vez
         PDFBoxResourceLoader.init(context)
 
-        // Limpiar llaves viejas corruptas (Si quedaron en AndroidKeyStore)
+        // Limpieza preventiva de llaves en AndroidKeyStore para evitar conflictos heredados
         try {
             val ks = java.security.KeyStore.getInstance("AndroidKeyStore")
             ks.load(null)
@@ -52,30 +61,38 @@ class FirmaRepositoryImpl @Inject constructor(
                 ks.deleteEntry(aliases.nextElement())
             }
         } catch (e: Exception) {
-            // ignorar
+            // Se ignora silenciosamente si falla la limpieza inicial
         }
     }
 
     // ─── Certificados ────────────────────────────────────────────────────────
     
-    override suspend fun importarCertificado(bytes: ByteArray, password: String, alias: String, pin: String): Result<Unit> =
+    /**
+     * Importa un archivo de certificado digital verificando su integridad y contraseña.
+     *
+     * @param bytes Contenido binario del certificado (.p12 / .pfx).
+     * @param password Contraseña de desbloqueo del archivo.
+     * @param alias Nombre único para identificar el certificado en la app.
+     * @return Result indicando el éxito o el error detallado de la operación.
+     */
+    override suspend fun importarCertificado(bytes: ByteArray, password: String, alias: String): Result<Unit> =
         withContext(Dispatchers.IO) {
             runCatching {
-                // Validar que la contraseña y los bytes sirvan nativamente
                 val ks = java.security.KeyStore.getInstance("PKCS12")
                 ks.load(java.io.ByteArrayInputStream(bytes), password.toCharArray())
                 
-                // Guardarlo físicamente usando nuestro Manager
                 p12StorageManager.saveCertificate(alias, bytes, password)
-                
-                // Guardar el hash del PIN de 6 dígitos asociado al certificado
-                p12StorageManager.savePinHash(alias, pin)
             }.fold(
                 onSuccess = { Result.Success(Unit) },
                 onFailure = { Result.Error("Error al importar: Contraseña incorrecta o archivo dañado.", it) }
             )
         }
 
+    /**
+     * Enumera los certificados disponibles extrayendo sus metadatos (X.509).
+     *
+     * @return Result con la lista de certificados mapeados a objetos de dominio.
+     */
     override suspend fun listarCertificados(): Result<List<Certificado>> =
         withContext(Dispatchers.IO) {
             runCatching {
@@ -88,7 +105,6 @@ class FirmaRepositoryImpl @Inject constructor(
                         val ks = java.security.KeyStore.getInstance("PKCS12")
                         ks.load(java.io.FileInputStream(file), pwd.toCharArray())
                         
-                        // Extraer el primer certificado X509 que encontramos en la llave
                         var cert: java.security.cert.X509Certificate? = null
                         val keyAliases = ks.aliases()
                         while (keyAliases.hasMoreElements()) {
@@ -107,22 +123,31 @@ class FirmaRepositoryImpl @Inject constructor(
             )
         }
 
-    // ─── PIN Verification ─────────────────────────────────────────────────────
-
-    override suspend fun verificarPinCertificado(alias: String, pin: String): Boolean =
-        withContext(Dispatchers.IO) {
-            p12StorageManager.verifyPin(alias, pin)
-        }
-
     // ─── Firma ────────────────────────────────────────────────────────────────
+    
+    /**
+     * Ejecuta la lógica de firma digital invocando al controlador nativo.
+     * Inyecta dinámicamente la URL de la TSL según la configuración actual.
+     *
+     * @param documentoFirma Parámetros y archivo a firmar.
+     * @return Result con la información del archivo resultante.
+     */
     override suspend fun firmarDocumento(documentoFirma: DocumentoFirma): Result<ResultadoFirma> =
         withContext(Dispatchers.IO) {
             runCatching {
-                val params = documentoFirma.toParameters(context)
+                val tslUrl = getTslUrl()
+                val finalDoc = if (documentoFirma.tsl.url.isEmpty()) {
+                    documentoFirma.copy(
+                        tsl = documentoFirma.tsl.copy(verificar = true, url = tslUrl)
+                    )
+                } else {
+                    documentoFirma
+                }
+
+                val params = finalDoc.toParameters(context)
                 
-                // Inyectamos la ruta física y su contraseña para evitar usar AndroidKeyStore
-                val certFile = p12StorageManager.getCertificateFile(documentoFirma.aliasCertificado)
-                val pwd = p12StorageManager.getCertificatePassword(documentoFirma.aliasCertificado)
+                val certFile = p12StorageManager.getCertificateFile(finalDoc.aliasCertificado)
+                val pwd = p12StorageManager.getCertificatePassword(finalDoc.aliasCertificado)
                 
                 if (certFile != null && pwd != null) {
                     params.setRutaCertificado(certFile.absolutePath)
@@ -132,14 +157,14 @@ class FirmaRepositoryImpl @Inject constructor(
                 val controller = FirmaController()
                 controller.firmarDocumento(params)
 
-                val nombreSalida = "${documentoFirma.archivo.nameWithoutExtension}" +
-                        "${documentoFirma.sufijo}.pdf"
-                val archivoSalida = File(documentoFirma.rutaDestino, nombreSalida)
+                val nombreSalida = "${finalDoc.archivo.nameWithoutExtension}" +
+                        "${finalDoc.sufijo}.pdf"
+                val archivoSalida = File(finalDoc.rutaDestino, nombreSalida)
 
                 ResultadoFirma(
                     archivoFirmado     = archivoSalida,
                     nombreArchivo      = nombreSalida,
-                    aliasCertificado   = documentoFirma.aliasCertificado,
+                    aliasCertificado   = finalDoc.aliasCertificado,
                 )
             }.fold(
                 onSuccess = { Result.Success(it) },
@@ -148,21 +173,61 @@ class FirmaRepositoryImpl @Inject constructor(
         }
 
     // ─── Validación ───────────────────────────────────────────────────────────
+    
+    /**
+     * Valida las firmas de un PDF comparándolas contra la Trust Service List (TSL).
+     * Extrae adicionalmente los certificados embebidos para enriquecer el resultado.
+     *
+     * @param archivoPdf Archivo físico a validar.
+     * @return Result con el informe de validación consolidado.
+     */
     override suspend fun validarDocumento(archivoPdf: File): Result<ResultadoValidacion> =
         withContext(Dispatchers.IO) {
             runCatching {
-                // Cargar TSL (usa URL configurada en common.properties del AAR)
-                val tsl = Tsl(/* url = */ "", /* maxAge = */ null,
+                val tslUrl = getTslUrl()
+                
+                val tsl = Tsl(tslUrl, 24 * 60 * 60 * 1000L,
                     /* verificar = */ true, context)
 
                 @Suppress("UNCHECKED_CAST")
                 val result = ValidacionController
                     .validarDocumento(context, archivoPdf, tsl)
 
-                result.toResultadoValidacion()
+                val certs = acj.soluciones.acjsignature.data.firma.PdfCertExtractor.extractCertificates(archivoPdf)
+                result.toResultadoValidacion(certs)
             }.fold(
                 onSuccess = { Result.Success(it) },
                 onFailure = { Result.Error("Error al validar: ${it.message}", it) },
             )
         }
-}
+
+    /**
+     * Obtiene la URL de la TSL (Producción o Pruebas) según la configuración persistente.
+     *
+     * @return URL de la lista de servicios de confianza.
+     */
+    private suspend fun getTslUrl(): String {
+        val config = configDataStore.configuracion.first()
+        return if (config.usarTslPrueba) {
+            "https://nodoyuna4.github.io/pki/tsl/tsl2026.xml"
+        } else {
+            "https://iofe.indecopi.gob.pe/TSL/tsl-pe.xml"
+        }
+    }
+
+    /**
+     * Elimina el archivo de certificado y sus credenciales asociadas.
+     *
+     * @param alias Identificador único del certificado.
+     * @return Result indicando éxito o fracaso.
+     */
+    override suspend fun eliminarCertificado(alias: String): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                p12StorageManager.deleteCertificate(alias)
+            }.fold(
+                onSuccess = { Result.Success(Unit) },
+                onFailure = { Result.Error("Error al eliminar el certificado: ${it.message}", it) }
+            )
+        }
+}

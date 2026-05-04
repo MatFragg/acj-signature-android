@@ -14,10 +14,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+/**
+ * ViewModel que gestiona la lógica de administración de certificados digitales (.p12).
+ * Permite listar identidades disponibles, importar nuevos archivos PKCS#12 con contraseña
+ * y eliminar certificados existentes.
+ *
+ * @property firmaRepository Repositorio para la gestión de llaves y certificados.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @HiltViewModel
 class CertificadosViewModel @Inject constructor(
     private val firmaRepository: FirmaRepository,
 ) : ViewModel() {
+
 
     private val _state = MutableStateFlow(CertificadosState())
     val state = _state.asStateFlow()
@@ -25,13 +36,16 @@ class CertificadosViewModel @Inject constructor(
     // Selected P12 file URI for import
     private var pendingP12Uri: Uri? = null
     private var pendingP12Bytes: ByteArray? = null
-    private var pendingPassword: String? = null
 
     init {
         cargarCertificados()
     }
 
+    /**
+     * Recupera la lista actualizada de certificados desde el repositorio.
+     */
     fun cargarCertificados() {
+
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             when (val result = firmaRepository.listarCertificados()) {
@@ -55,17 +69,24 @@ class CertificadosViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Maneja la selección de un archivo .p12 desde el selector de archivos.
+     * @param uri URI del archivo seleccionado.
+     * @param bytes Contenido binario del archivo.
+     */
     fun onP12Selected(uri: Uri, bytes: ByteArray) {
+
         pendingP12Uri = uri
         pendingP12Bytes = bytes
         _state.update { it.copy(showPasswordDialog = true) }
     }
 
     /**
-     * Paso 1: Validar la contraseña del .p12.
-     * Si es correcta, se guarda temporalmente y se abre el diálogo de PIN.
+     * Procesa la contraseña ingresada para validar e importar el certificado .p12.
+     * @param password Contraseña para abrir el archivo PKCS#12.
      */
     fun onPasswordConfirmed(password: String) {
+
         val bytes = pendingP12Bytes ?: return
 
         viewModelScope.launch {
@@ -80,8 +101,30 @@ class CertificadosViewModel @Inject constructor(
             }
 
             if (isValid) {
-                pendingPassword = password
-                _state.update { it.copy(isLoading = false, showPinDialog = true) }
+                val alias = "cert_${System.currentTimeMillis()}"
+                when (val result = firmaRepository.importarCertificado(bytes, password, alias)) {
+                    is Result.Success -> {
+                        clearPendingState()
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                importSuccess = "Certificado importado exitosamente",
+                            )
+                        }
+                        cargarCertificados()
+                    }
+                    is Result.Error -> {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.message,
+                            )
+                        }
+                    }
+                    else -> {
+                        _state.update { it.copy(isLoading = false, error = "Error desconocido al importar") }
+                    }
+                }
             } else {
                 _state.update {
                     it.copy(
@@ -94,61 +137,46 @@ class CertificadosViewModel @Inject constructor(
     }
 
     /**
-     * Paso 2: El usuario creó su PIN de 6 dígitos.
-     * Se procede a importar el certificado con el PIN.
+     * Cancela el proceso de importación actual y limpia los datos temporales.
      */
-    fun onPinConfirmed(pin: String) {
-        val bytes = pendingP12Bytes ?: return
-        val password = pendingPassword ?: return
+    fun onCancelImport() {
 
-        _state.update { it.copy(showPinDialog = false, isLoading = true) }
+        clearPendingState()
+        _state.update { it.copy(showPasswordDialog = false) }
+    }
+
+    /**
+     * Limpia los mensajes de error o éxito del estado.
+     */
+    fun clearMessages() {
+
+        _state.update { it.copy(error = null, importSuccess = null) }
+    }
+
+    /**
+     * Elimina permanentemente un certificado del almacenamiento seguro.
+     * @param alias Identificador único del certificado a eliminar.
+     */
+    fun eliminarCertificado(alias: String) {
 
         viewModelScope.launch {
-            val alias = "cert_${System.currentTimeMillis()}"
-
-            when (val result = firmaRepository.importarCertificado(bytes, password, alias, pin)) {
+            _state.update { it.copy(isLoading = true) }
+            when (val result = firmaRepository.eliminarCertificado(alias)) {
                 is Result.Success -> {
-                    clearPendingState()
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            importSuccess = "Certificado importado exitosamente",
-                        )
-                    }
                     cargarCertificados()
                 }
                 is Result.Error -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.message,
-                        )
-                    }
+                    _state.update { it.copy(isLoading = false, error = result.message) }
                 }
                 else -> {
-                    _state.update { it.copy(isLoading = false, error = "Error desconocido al importar") }
+                    _state.update { it.copy(isLoading = false, error = "Error desconocido al eliminar") }
                 }
             }
         }
     }
 
-    fun onCancelImport() {
-        clearPendingState()
-        _state.update { it.copy(showPasswordDialog = false) }
-    }
-
-    fun onCancelPin() {
-        clearPendingState()
-        _state.update { it.copy(showPinDialog = false) }
-    }
-
-    fun clearMessages() {
-        _state.update { it.copy(error = null, importSuccess = null) }
-    }
-
     private fun clearPendingState() {
         pendingP12Bytes = null
         pendingP12Uri = null
-        pendingPassword = null
     }
 }

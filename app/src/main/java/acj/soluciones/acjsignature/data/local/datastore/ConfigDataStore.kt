@@ -12,17 +12,43 @@ import javax.inject.Singleton
 
 private val Context.dataStore by preferencesDataStore(name = "acj_preferences")
 
+/**
+ * Modelo de datos que representa las preferencias de configuración para la firma digital.
+ *
+ * @property logoUri URI local de la imagen utilizada como logo en el sello.
+ * @property incluirEmpresa Indica si se muestra la empresa en el sello visual.
+ * @property incluirCargo Indica si se muestra el cargo en el sello visual.
+ * @property incluirTelefono Indica si se muestra el teléfono en el sello visual.
+ * @property usarTslPrueba Define si se deben validar certificados contra una TSL de pruebas.
+ * @property nombreUsuario Nombre personalizado para el titular.
+ * @property cargoUsuario Cargo personalizado para el titular.
+ * @property empresaUsuario Empresa personalizada para el titular.
+ * @property telefonoUsuario Teléfono personalizado para el titular.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 data class ConfiguracionFirma(
     val logoUri: String? = null,
     val incluirEmpresa: Boolean = true,
     val incluirCargo: Boolean = true,
     val incluirTelefono: Boolean = false,
+    val usarTslPrueba: Boolean = false,
     val nombreUsuario: String = "",
     val cargoUsuario: String = "",
     val empresaUsuario: String = "",
     val telefonoUsuario: String = "",
 )
 
+/**
+ * Gestor de preferencias persistentes utilizando Jetpack DataStore.
+ * Almacena configuraciones de usuario que afectan el comportamiento y la apariencia de la firma.
+ *
+ * @property context Contexto para acceder al DataStore.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @Singleton
 class ConfigDataStore @Inject constructor(
     private val context: Context,
@@ -36,8 +62,12 @@ class ConfigDataStore @Inject constructor(
         val CARGO_USUARIO = stringPreferencesKey("cargo_usuario")
         val EMPRESA_USUARIO = stringPreferencesKey("empresa_usuario")
         val TELEFONO_USUARIO = stringPreferencesKey("telefono_usuario")
+        val USAR_TSL_PRUEBA = booleanPreferencesKey("usar_tsl_prueba")
     }
 
+    /**
+     * Flujo reactivo que emite los cambios en la configuración almacenada.
+     */
     val configuracion: Flow<ConfiguracionFirma> = context.dataStore.data.map { prefs ->
         ConfiguracionFirma(
             logoUri = prefs[Keys.LOGO_URI],
@@ -48,9 +78,15 @@ class ConfigDataStore @Inject constructor(
             cargoUsuario = prefs[Keys.CARGO_USUARIO] ?: "",
             empresaUsuario = prefs[Keys.EMPRESA_USUARIO] ?: "",
             telefonoUsuario = prefs[Keys.TELEFONO_USUARIO] ?: "",
+            usarTslPrueba = prefs[Keys.USAR_TSL_PRUEBA] ?: false,
         )
     }
 
+    /**
+     * Guarda un objeto de configuración completo en el almacenamiento.
+     *
+     * @param config Objeto con todos los valores a persistir.
+     */
     suspend fun guardar(config: ConfiguracionFirma) {
         context.dataStore.edit { prefs ->
             config.logoUri?.let { prefs[Keys.LOGO_URI] = it } ?: prefs.remove(Keys.LOGO_URI)
@@ -61,15 +97,28 @@ class ConfigDataStore @Inject constructor(
             prefs[Keys.CARGO_USUARIO] = config.cargoUsuario
             prefs[Keys.EMPRESA_USUARIO] = config.empresaUsuario
             prefs[Keys.TELEFONO_USUARIO] = config.telefonoUsuario
+            prefs[Keys.USAR_TSL_PRUEBA] = config.usarTslPrueba
         }
     }
 
+    /**
+     * Actualiza únicamente la referencia al logo visual.
+     *
+     * @param uri Nueva URI del logo o null para eliminarlo.
+     */
     suspend fun actualizarLogo(uri: String?) {
         context.dataStore.edit { prefs ->
             uri?.let { prefs[Keys.LOGO_URI] = it } ?: prefs.remove(Keys.LOGO_URI)
         }
     }
 
+    /**
+     * Actualiza selectivamente los interruptores de visibilidad en el sello.
+     *
+     * @param empresa Visibilidad de la empresa.
+     * @param cargo Visibilidad del cargo.
+     * @param telefono Visibilidad del teléfono.
+     */
     suspend fun actualizarCampos(empresa: Boolean, cargo: Boolean, telefono: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[Keys.INCLUIR_EMPRESA] = empresa

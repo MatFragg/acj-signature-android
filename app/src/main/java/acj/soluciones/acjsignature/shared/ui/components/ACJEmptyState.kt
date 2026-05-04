@@ -19,6 +19,19 @@ import androidx.compose.ui.unit.dp
 import acj.soluciones.acjsignature.shared.ui.theme.TextBody
 import acj.soluciones.acjsignature.shared.ui.theme.TextMuted
 
+/**
+ * Componente visual para mostrar cuando no hay datos disponibles en una pantalla o sección.
+ * Presenta un icono central, un título descriptivo y un mensaje de ayuda opcional.
+ *
+ * @param icon Vector de imagen que representa visualmente el estado vacío.
+ * @param title Texto destacado que indica la ausencia de contenido.
+ * @param description Texto secundario con más detalle o instrucciones para el usuario.
+ * @param modifier Modificador de diseño opcional.
+ * @param action Slot opcional para incluir un botón de acción (ej. "Reintentar" o "Agregar").
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @Composable
 fun ACJEmptyState(
     icon: ImageVector,
@@ -27,6 +40,7 @@ fun ACJEmptyState(
     modifier: Modifier = Modifier,
     action: @Composable (() -> Unit)? = null,
 ) {
+
     Column(
         modifier = modifier
             .fillMaxWidth()

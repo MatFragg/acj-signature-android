@@ -20,6 +20,20 @@ import acj.soluciones.acjsignature.shared.ui.theme.CardBg
 import acj.soluciones.acjsignature.shared.ui.theme.DeepPurple
 import acj.soluciones.acjsignature.shared.ui.theme.TextBody
 
+/**
+ * Tarjeta informativa para mostrar métricas o estadísticas rápidas.
+ * Presenta un título, un valor numérico resaltado y un subtítulo descriptivo.
+ *
+ * @param title Etiqueta superior de la estadística.
+ * @param value Valor principal a resaltar (ej. "25", "100%").
+ * @param subtitle Texto inferior que provee contexto al valor.
+ * @param modifier Modificador de diseño opcional.
+ * @param valueColor Color aplicado al texto del valor principal.
+ * @param containerColor Color de fondo de la tarjeta.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @Composable
 fun ACJStatsCard(
     title: String,
@@ -29,6 +43,7 @@ fun ACJStatsCard(
     valueColor: Color = DeepPurple,
     containerColor: Color = CardBg,
 ) {
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),

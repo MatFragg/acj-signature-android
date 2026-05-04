@@ -22,12 +22,24 @@ import acj.soluciones.acjsignature.shared.ui.theme.PinkLight
 import acj.soluciones.acjsignature.shared.ui.theme.TextMuted
 import acj.soluciones.acjsignature.shared.ui.theme.White
 
+/**
+ * Indicador de progreso por pasos para procesos secuenciales (ej. flujo de firma).
+ * Muestra el número de paso actual y una serie de barras que indican el avance visual.
+ *
+ * @param currentStep Índice del paso actual (1-indexed).
+ * @param totalSteps Cantidad total de pasos en el proceso.
+ * @param modifier Modificador de diseño opcional.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @Composable
 fun ACJProgressIndicator(
     currentStep: Int,
     totalSteps: Int,
     modifier: Modifier = Modifier,
 ) {
+
     Row(
         modifier = modifier
             .fillMaxWidth()

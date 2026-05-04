@@ -17,12 +17,24 @@ import acj.soluciones.acjsignature.shared.ui.theme.PinkLight
 import acj.soluciones.acjsignature.shared.ui.theme.TextMuted
 import acj.soluciones.acjsignature.shared.ui.theme.White
 
+/**
+ * Barra de navegación inferior personalizada para la aplicación.
+ * Muestra los destinos principales y resalta el estado de selección actual.
+ *
+ * @param currentRoute Ruta de navegación activa para determinar la selección.
+ * @param onItemSelected Función de callback que se dispara al seleccionar un ítem.
+ * @param modifier Modificador de diseño opcional.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @Composable
 fun ACJBottomNavBar(
     currentRoute: String?,
     onItemSelected: (Screen) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+
     NavigationBar(
         modifier = modifier,
         containerColor = White,

@@ -7,13 +7,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,8 +27,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -39,6 +38,19 @@ import acj.soluciones.acjsignature.shared.ui.components.ACJPager
 import acj.soluciones.acjsignature.shared.ui.theme.*
 import kotlin.math.roundToInt
 
+/**
+ * Pantalla interactiva para definir la ubicación visual de la firma en un documento PDF.
+ * Permite al usuario arrastrar un recuadro que representa la firma, navegar por las páginas
+ * del documento y seleccionar la identidad digital con la que se realizará el estampado.
+ *
+ * @param docId Identificador del documento a firmar.
+ * @param onBack Callback para cancelar y regresar.
+ * @param onConfirm Callback invocado tras completar la firma exitosamente.
+ * @param viewModel ViewModel que gestiona el renderizado y la lógica de firma.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PosicionarFirmaScreen(
@@ -47,6 +59,7 @@ fun PosicionarFirmaScreen(
     onConfirm: () -> Unit,
     viewModel: PosicionarFirmaViewModel = hiltViewModel()
 ) {
+
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     
@@ -118,79 +131,6 @@ fun PosicionarFirmaScreen(
         )
     }
 
-    // PIN verification dialog
-    if (state.showPinDialog) {
-        var pinInput by remember { mutableStateOf("") }
-
-        AlertDialog(
-            onDismissRequest = {
-                viewModel.onCancelPin()
-                pinInput = ""
-            },
-            icon = {
-                Icon(
-                    Icons.Filled.Lock,
-                    contentDescription = null,
-                    tint = DeepPurple,
-                    modifier = Modifier.size(32.dp),
-                )
-            },
-            title = {
-                Text(
-                    "Verificar PIN",
-                    style = MaterialTheme.typography.titleLarge,
-                )
-            },
-            text = {
-                Column {
-                    Text(
-                        "Ingresa el PIN de 6 dígitos de tu certificado para proceder con la firma.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextBody,
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
-                        value = pinInput,
-                        onValueChange = { newValue ->
-                            if (newValue.length <= 6 && newValue.all { it.isDigit() }) {
-                                pinInput = newValue
-                            }
-                        },
-                        label = { Text("PIN") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                        isError = state.pinError != null,
-                        supportingText = {
-                            state.pinError?.let {
-                                Text(it, color = Error)
-                            }
-                        },
-                    )
-                }
-            },
-            confirmButton = {
-                ACJPrimaryButton(
-                    text = "Verificar",
-                    onClick = {
-                        viewModel.onPinVerificado(pinInput)
-                        pinInput = ""
-                    },
-                    enabled = pinInput.length == 6,
-                )
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    viewModel.onCancelPin()
-                    pinInput = ""
-                }) {
-                    Text("Cancelar", color = TextMuted)
-                }
-            },
-        )
-    }
 
     Scaffold(
         topBar = {
@@ -329,50 +269,57 @@ fun PosicionarFirmaScreen(
     }
 }
 
+/**
+ * Diálogo modal para que el usuario elija entre los certificados disponibles.
+ *
+ * @param certificados Lista de identidades digitales filtradas.
+ * @param onDismiss Callback para cerrar el diálogo sin seleccionar.
+ * @param onSelect Callback invocado con el certificado elegido.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @Composable
 fun CertificadoSelectionDialog(
     certificados: List<Certificado>,
     onDismiss: () -> Unit,
     onSelect: (Certificado) -> Unit
 ) {
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Seleccionar Certificado", style = MaterialTheme.typography.titleLarge) },
         text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                certificados.forEach { cert ->
-                    Card(
-                        onClick = { onSelect(cert) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardBg)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+            Box(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    items(certificados) { cert ->
+                        Card(
+                            onClick = { onSelect(cert) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = CardBg)
                         ) {
-                            Icon(
-                                Icons.Filled.VerifiedUser,
-                                null,
-                                tint = Magenta,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    cert.etiquetaDisplay,
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = DeepPurple
-                                )
-                                Text(
-                                    "Emisor: ${cert.emisor}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = TextMuted
-                                )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        cert.etiquetaDisplay,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = DeepPurple
+                                    )
+                                    Text(
+                                        "Emisor: ${cert.emisor}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = TextMuted
+                                    )
+                                }
                             }
                         }
                     }

@@ -7,7 +7,6 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,15 +19,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Help
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -55,34 +48,47 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import acj.soluciones.acjsignature.shared.ui.components.ACJEmptyState
-import acj.soluciones.acjsignature.shared.ui.components.ACJFeatureCard
 import acj.soluciones.acjsignature.shared.ui.components.ACJPrimaryButton
-import acj.soluciones.acjsignature.shared.ui.components.ACJTopAppBar
 import acj.soluciones.acjsignature.shared.ui.theme.*
-import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import kotlinx.coroutines.launch
+import acj.soluciones.acjsignature.domain.model.Certificado
 
+/**
+ * Pantalla para la gestión de certificados digitales del usuario.
+ * Permite visualizar certificados importados, eliminarlos mediante gestos de deslizamiento
+ * e importar nuevos certificados desde archivos .p12 o .pfx.
+ *
+ * @param viewModel ViewModel que maneja el estado y las acciones de los certificados.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CertificadosScreen(
     viewModel: CertificadosViewModel = hiltViewModel(),
 ) {
+
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     var password by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
-    // PIN creation state
-    var pin by remember { mutableStateOf("") }
-    var pinConfirm by remember { mutableStateOf("") }
-    var pinError by remember { mutableStateOf<String?>(null) }
+
+    // Deletion confirmation state
+    var certificateToDelete by remember { mutableStateOf<Certificado?>(null) }
 
     // MIME types expandidos para asegurar que los `.p12` o `.pfx` siempre sean seleccionables
     val p12MimeTypes = arrayOf(
@@ -125,11 +131,10 @@ fun CertificadosScreen(
     }
 
     /**
-     * Verifica permiso y abre el picker.
-     * - Android 13+ (API 33): No necesita permiso → abre directo.
-     * - Android <13: Pide READ_EXTERNAL_STORAGE si no está concedido.
+     * Inicia el selector de archivos tras verificar los permisos necesarios.
      */
     fun launchP12Picker() {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             // API 33+: SAF no necesita permisos
             p12Picker.launch(p12MimeTypes)
@@ -191,116 +196,43 @@ fun CertificadosScreen(
         )
     }
 
-    // PIN creation dialog
-    if (state.showPinDialog) {
-        val pinIsValid = pin.length == 6 && pin.all { it.isDigit() }
-        val pinsMatch = pin == pinConfirm
-        val canConfirm = pinIsValid && pinsMatch
 
+    // Delete confirmation dialog
+    if (certificateToDelete != null) {
         AlertDialog(
-            onDismissRequest = {
-                viewModel.onCancelPin()
-                pin = ""
-                pinConfirm = ""
-                pinError = null
-            },
+            onDismissRequest = { certificateToDelete = null },
             icon = {
                 Icon(
-                    Icons.Filled.Lock,
+                    Icons.Filled.Warning,
                     contentDescription = null,
-                    tint = DeepPurple,
+                    tint = Error,
                     modifier = Modifier.size(32.dp),
                 )
             },
             title = {
                 Text(
-                    "Crear PIN de Seguridad",
+                    "¿Estás seguro?",
                     style = MaterialTheme.typography.titleLarge,
                 )
             },
             text = {
-                Column {
-                    Text(
-                        "Crea un PIN de 6 dígitos numéricos para proteger el uso de este certificado. Se te solicitará cada vez que firmes un documento.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextBody,
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = pin,
-                        onValueChange = { newValue ->
-                            // Solo permitir dígitos, máximo 6
-                            if (newValue.length <= 6 && newValue.all { it.isDigit() }) {
-                                pin = newValue
-                                pinError = null
-                            }
-                        },
-                        label = { Text("PIN (6 dígitos)") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                        isError = pin.isNotEmpty() && !pinIsValid,
-                        supportingText = {
-                            if (pin.isNotEmpty() && !pinIsValid) {
-                                Text("El PIN debe tener exactamente 6 dígitos", color = Error)
-                            }
-                        },
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    OutlinedTextField(
-                        value = pinConfirm,
-                        onValueChange = { newValue ->
-                            if (newValue.length <= 6 && newValue.all { it.isDigit() }) {
-                                pinConfirm = newValue
-                                pinError = null
-                            }
-                        },
-                        label = { Text("Confirmar PIN") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                        isError = pinConfirm.isNotEmpty() && !pinsMatch,
-                        supportingText = {
-                            if (pinConfirm.isNotEmpty() && !pinsMatch) {
-                                Text("Los PINs no coinciden", color = Error)
-                            }
-                        },
-                    )
-
-                    pinError?.let {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(it, color = Error, style = MaterialTheme.typography.bodySmall)
-                    }
-                }
+                Text(
+                    "¿Estás seguro de realizar esta acción? El certificado se eliminará permanentemente de este dispositivo.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextBody,
+                )
             },
             confirmButton = {
                 ACJPrimaryButton(
-                    text = "Confirmar PIN",
+                    text = "Eliminar",
                     onClick = {
-                        if (canConfirm) {
-                            viewModel.onPinConfirmed(pin)
-                            pin = ""
-                            pinConfirm = ""
-                            pinError = null
-                        }
+                        certificateToDelete?.let { viewModel.eliminarCertificado(it.alias) }
+                        certificateToDelete = null
                     },
-                    enabled = canConfirm,
                 )
             },
             dismissButton = {
-                TextButton(onClick = {
-                    viewModel.onCancelPin()
-                    pin = ""
-                    pinConfirm = ""
-                    pinError = null
-                }) {
+                TextButton(onClick = { certificateToDelete = null }) {
                     Text("Cancelar", color = TextMuted)
                 }
             },
@@ -308,7 +240,6 @@ fun CertificadosScreen(
     }
 
     Scaffold(
-        topBar = { ACJTopAppBar() },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(
@@ -321,7 +252,7 @@ fun CertificadosScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Warning Banner ───────────────────────────
-            Card(
+            /*Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = YellowWarning),
@@ -337,15 +268,15 @@ fun CertificadosScreen(
                         modifier = Modifier.size(20.dp),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    /*Text(
                         text = "Validación Pendiente",
                         style = MaterialTheme.typography.labelMedium,
                         color = YellowWarningText,
-                    )
+                    )*/
                 }
-            }
+            }*/
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // ── Title ────────────────────────────────────
             Text(
@@ -355,7 +286,7 @@ fun CertificadosScreen(
                 },
                 style = MaterialTheme.typography.headlineLarge,
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Gestiona tus certificados digitales para firma digital",
                 style = MaterialTheme.typography.bodyMedium,
@@ -382,49 +313,86 @@ fun CertificadosScreen(
                 )
             } else {
                 state.certificados.forEach { cert ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardBg),
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
+                    val dismissState = rememberSwipeToDismissBoxState(
+                        confirmValueChange = {
+                            if (it == SwipeToDismissBoxValue.EndToStart || it == SwipeToDismissBoxValue.StartToEnd) {
+                                certificateToDelete = cert
+                            }
+                            false // Snap back while waiting for confirmation
+                        }
+                    )
+
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        backgroundContent = {
+                            val color = when (dismissState.dismissDirection) {
+                                SwipeToDismissBoxValue.EndToStart -> Error.copy(alpha = 0.8f)
+                                SwipeToDismissBoxValue.StartToEnd -> Error.copy(alpha = 0.8f)
+                                else -> MaterialTheme.colorScheme.surface
+                            }
                             Box(
                                 modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(if (cert.estaVigente) GreenOverlay else Error.copy(alpha = 0.1f)),
-                                contentAlignment = Alignment.Center,
+                                    .fillMaxSize()
+                                    .padding(vertical = 4.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(color),
+                                contentAlignment = if (dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) 
+                                    Alignment.CenterStart else Alignment.CenterEnd
                             ) {
                                 Icon(
-                                    if (cert.estaVigente) Icons.Filled.CheckCircle else Icons.Filled.Warning,
-                                    contentDescription = null,
-                                    tint = if (cert.estaVigente) GreenActive else Error,
-                                    modifier = Modifier.size(22.dp),
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Eliminar",
+                                    tint = MaterialTheme.colorScheme.onError,
+                                    modifier = Modifier.padding(horizontal = 24.dp)
                                 )
                             }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    cert.etiquetaDisplay,
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = DeepPurple,
-                                    letterSpacing = MaterialTheme.typography.bodyMedium.letterSpacing,
-                                )
-                                Text(
-                                    cert.organizacion,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = TextBody,
-                                )
-                                Text(
-                                    "Emisor: ${cert.emisor}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = TextMuted,
-                                )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = CardBg),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                /*Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (cert.estaVigente) GreenOverlay else Error.copy(alpha = 0.1f)),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        if (cert.estaVigente) Icons.Filled.CheckCircle else Icons.Filled.Warning,
+                                        contentDescription = null,
+                                        tint = if (cert.estaVigente) GreenActive else Error,
+                                        modifier = Modifier.size(22.dp),
+                                    )
+                                }*/
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        cert.etiquetaDisplay,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = DeepPurple,
+                                        letterSpacing = MaterialTheme.typography.bodyMedium.letterSpacing,
+                                    )
+                                    Text(
+                                        cert.organizacion,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = TextBody,
+                                    )
+                                    Text(
+                                        "Emisor: ${cert.emisor}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = TextMuted,
+                                    )
+                                }
                             }
                         }
                     }

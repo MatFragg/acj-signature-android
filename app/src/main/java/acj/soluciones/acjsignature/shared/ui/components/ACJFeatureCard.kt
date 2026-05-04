@@ -33,6 +33,22 @@ import acj.soluciones.acjsignature.shared.ui.theme.TextBody
 import acj.soluciones.acjsignature.shared.ui.theme.TextMuted
 import acj.soluciones.acjsignature.shared.ui.theme.White
 
+/**
+ * Tarjeta interactiva que destaca una funcionalidad principal de la aplicación.
+ * Presenta un icono con fondo personalizado, título y descripción detallada.
+ *
+ * @param title Título representativo de la funcionalidad.
+ * @param description Breve explicación del propósito de la función.
+ * @param icon Icono vectorial a mostrar.
+ * @param onClick Callback que se ejecuta al presionar la tarjeta.
+ * @param modifier Modificador de diseño opcional.
+ * @param iconTint Color aplicado al icono.
+ * @param iconBgColor Color de fondo del contenedor del icono.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
+
 @Composable
 fun ACJFeatureCard(
     title: String,
@@ -53,13 +69,13 @@ fun ACJFeatureCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(13.dp))
                     .background(iconBgColor),
                 contentAlignment = Alignment.Center,
             ) {
@@ -67,7 +83,7 @@ fun ACJFeatureCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = iconTint,
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(26.dp),
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))

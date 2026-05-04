@@ -7,6 +7,7 @@ import acj.soluciones.acjsignature.domain.model.FirmaVisible
 import acj.soluciones.acjsignature.domain.repository.DocumentoRepository
 import acj.soluciones.acjsignature.domain.repository.FirmaRepository
 import acj.soluciones.acjsignature.domain.usecase.FirmarDocumentoUseCase
+import acj.soluciones.acjsignature.data.local.storage.FileStorageManager
 import acj.soluciones.acjsignature.shared.domain.Result
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
@@ -27,14 +28,31 @@ import javax.inject.Inject
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 
+/**
+ * ViewModel que orquestador la interactividad de posicionamiento y el proceso criptográfico de firma.
+ * Gestiona el renderizado de páginas PDF, la carga de identidades digitales y la ejecución
+ * del caso de uso de firma digital con representación visual personalizada.
+ *
+ * @property context Contexto de la aplicación.
+ * @property documentoRepository Repositorio para la gestión de documentos.
+ * @property firmaRepository Repositorio para la gestión de identidades digitales.
+ * @property configDataStore Almacén de configuraciones visuales.
+ * @property firmarDocumentoUseCase Caso de uso para la firma criptográfica.
+ * @property fileStorageManager Gestor de archivos y rutas.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @HiltViewModel
 class PosicionarFirmaViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val documentoRepository: DocumentoRepository,
     private val firmaRepository: FirmaRepository,
     private val configDataStore: ConfigDataStore,
-    private val firmarDocumentoUseCase: FirmarDocumentoUseCase
+    private val firmarDocumentoUseCase: FirmarDocumentoUseCase,
+    private val fileStorageManager: FileStorageManager
 ) : ViewModel() {
+
 
     private val _state = MutableStateFlow(PosicionarFirmaState())
     val state = _state.asStateFlow()
@@ -43,7 +61,12 @@ class PosicionarFirmaViewModel @Inject constructor(
     private var fileDescriptor: ParcelFileDescriptor? = null
     private var currentPage: PdfRenderer.Page? = null
 
+    /**
+     * Carga la información del documento y prepara el entorno de visualización.
+     * @param docId ID del documento en la base de datos local.
+     */
     fun loadDocument(docId: Long) {
+
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, documentoId = docId) }
 
@@ -146,72 +169,49 @@ class PosicionarFirmaViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Avanza a la siguiente página del documento si está disponible.
+     */
     fun nextPage() {
+
         if (_state.value.currentPage < _state.value.totalPages) {
             viewModelScope.launch { renderPage(_state.value.currentPage) }
         }
     }
 
+    /**
+     * Retrocede a la página anterior del documento.
+     */
     fun previousPage() {
+
         if (_state.value.currentPage > 1) {
             viewModelScope.launch { renderPage(_state.value.currentPage - 2) }
         }
     }
 
+    /**
+     * Salta directamente a una página específica.
+     * @param page Número de página (1-indexed).
+     */
     fun jumpToPage(page: Int) {
+
         val totalPages = _state.value.totalPages
         if (page in 1..totalPages) {
             viewModelScope.launch { renderPage(page - 1) }
         }
     }
 
-    // ─── PIN-gated signing flow ─────────────────────────────────────────────
-
     /**
-     * Parámetros temporales de firma. Se guardan mientras el usuario
-     * ingresa su PIN en el diálogo de verificación.
-     */
-    private data class FirmaParams(
-        val certificado: Certificado,
-        val pdfX: Int,
-        val pdfY: Int,
-        val anchoVisible: Int,
-        val altoVisible: Int,
-    )
-
-    private var pendingFirmaParams: FirmaParams? = null
-
-    /**
-     * Punto de entrada público: en vez de firmar directamente,
-     * abre el diálogo de PIN para verificar la identidad del usuario.
+     * Inicia el proceso de firma digital en las coordenadas especificadas.
+     * @param certificado Identidad digital seleccionada.
+     * @param pdfX Coordenada X en puntos PDF.
+     * @param pdfY Coordenada Y en puntos PDF.
+     * @param anchoVisible Ancho del sello de firma.
+     * @param altoVisible Alto del sello de firma.
      */
     fun solicitarFirma(certificado: Certificado, pdfX: Int, pdfY: Int, anchoVisible: Int, altoVisible: Int) {
-        pendingFirmaParams = FirmaParams(certificado, pdfX, pdfY, anchoVisible, altoVisible)
-        _state.update { it.copy(showPinDialog = true, pinError = null) }
-    }
 
-    /**
-     * Callback del diálogo de PIN. Verifica el PIN contra el almacenado
-     * y procede con la firma si es correcto.
-     */
-    fun onPinVerificado(pin: String) {
-        val params = pendingFirmaParams ?: return
-
-        viewModelScope.launch {
-            val valid = firmaRepository.verificarPinCertificado(params.certificado.alias, pin)
-            if (valid) {
-                _state.update { it.copy(showPinDialog = false, pinError = null) }
-                pendingFirmaParams = null
-                firmarDocumento(params.certificado, params.pdfX, params.pdfY, params.anchoVisible, params.altoVisible)
-            } else {
-                _state.update { it.copy(pinError = "PIN incorrecto") }
-            }
-        }
-    }
-
-    fun onCancelPin() {
-        pendingFirmaParams = null
-        _state.update { it.copy(showPinDialog = false, pinError = null) }
+        firmarDocumento(certificado, pdfX, pdfY, anchoVisible, altoVisible)
     }
 
     private fun firmarDocumento(certificado: Certificado, pdfX: Int, pdfY: Int, anchoVisible: Int, altoVisible: Int) {
@@ -224,9 +224,8 @@ class PosicionarFirmaViewModel @Inject constructor(
             // Determinar la página donde va la firma
             val paginaFirma = currentState.currentPage
 
-            // Determinar la ruta segura en el sandbox interno del app
-            val outputDir = File(context.filesDir, "firmados")
-            if (!outputDir.exists()) outputDir.mkdirs()
+            // Determinar la ruta segura usando el storage manager
+            val outputDir = fileStorageManager.getSignedOutputDir()
 
             val documentoFirma = DocumentoFirma(
                 archivo = archivo,
@@ -241,8 +240,9 @@ class PosicionarFirmaViewModel @Inject constructor(
                     ancho = anchoVisible,
                     alto = altoVisible,
                     titulo = estadoNombre(currentState),
-                    rutaImagen = currentState.logoUri,
-                    apariencia = if (currentState.logoUri != null) "I" else "S",
+                    rutaImagen = currentState.logoUri?.takeIf { it.isNotBlank() && java.io.File(it).exists() } 
+                        ?: fileStorageManager.getDefaultLogoPath(),
+                    apariencia = "I", // Siempre usar imagen (la personalizada o el escudo por defecto)
                     incluirCargo = currentState.includeCargo,
                     incluirEmpresa = currentState.includeEmpresa
                 )
@@ -272,7 +272,11 @@ class PosicionarFirmaViewModel @Inject constructor(
         return state.firmaNombre.ifBlank { "FIRMA DIGITAL" }
     }
 
+    /**
+     * Limpia los errores registrados en el estado.
+     */
     fun clearError() {
+
         _state.update { it.copy(error = null) }
     }
 

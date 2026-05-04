@@ -3,7 +3,6 @@ package acj.soluciones.acjsignature.presentation.firma
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,10 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.Card
@@ -31,14 +27,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,7 +46,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -66,6 +58,18 @@ import acj.soluciones.acjsignature.shared.util.getFileName
 import acj.soluciones.acjsignature.shared.util.getFileSize
 import acj.soluciones.acjsignature.shared.util.toFormattedSize
 
+/**
+ * Pantalla inicial del flujo de firma electrónica.
+ * Permite al usuario seleccionar un archivo PDF desde el almacenamiento local,
+ * validando que cumpla con los requisitos técnicos (formato y tamaño).
+ *
+ * @param onBack Callback para regresar a la pantalla anterior.
+ * @param onNavigateToPosicionar Callback para avanzar al posicionamiento de la firma tras procesar el archivo.
+ * @param viewModel ViewModel para gestionar el estado de carga y validación.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FirmaScreen(
@@ -73,6 +77,7 @@ fun FirmaScreen(
     onNavigateToPosicionar: (Long) -> Unit,
     viewModel: FirmaViewModel = hiltViewModel(),
 ) {
+
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -96,18 +101,7 @@ fun FirmaScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = { Text("Firmar Documento", style = MaterialTheme.typography.titleMedium) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = White),
-            )
-        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -129,7 +123,7 @@ fun FirmaScreen(
                 },
                 style = MaterialTheme.typography.displayMedium,
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = "Sube tu documento PDF para iniciar el proceso de firma digital certificada",
                 style = MaterialTheme.typography.bodyMedium,
@@ -146,11 +140,16 @@ fun FirmaScreen(
                     colors = CardDefaults.cardColors(containerColor = CardBg),
                     elevation = CardDefaults.cardElevation(0.dp),
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Icon(Icons.Filled.Security, null, tint = Magenta, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Seguridad Máxima", style = MaterialTheme.typography.labelMedium, color = DeepPurple)
-                        Text("Cifrado AES-256", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text("Seguridad Máxima", style = MaterialTheme.typography.labelMedium, color = DeepPurple)
+                            Text("Cifrado AES-256", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                        }
                     }
                 }
                 Card(
@@ -159,16 +158,21 @@ fun FirmaScreen(
                     colors = CardDefaults.cardColors(containerColor = CardBg),
                     elevation = CardDefaults.cardElevation(0.dp),
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Icon(Icons.Filled.Timeline, null, tint = Magenta, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Trazabilidad Total", style = MaterialTheme.typography.labelMedium, color = DeepPurple)
-                        Text("Registro completo", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text("Trazabilidad Total", style = MaterialTheme.typography.labelMedium, color = DeepPurple)
+                            Text("Registro completo", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             // ── Upload Zone ──────────────────────────────────
             Box(

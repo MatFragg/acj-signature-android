@@ -53,20 +53,32 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import acj.soluciones.acjsignature.shared.ui.components.ACJPrimaryButton
 import acj.soluciones.acjsignature.shared.ui.components.ACJSecondaryButton
-import acj.soluciones.acjsignature.shared.ui.components.ACJTopAppBar
 import acj.soluciones.acjsignature.shared.ui.theme.*
+import android.annotation.SuppressLint
+import androidx.core.net.toUri
 
+/**
+ * Pantalla de configuración que permite al usuario personalizar su firma digital.
+ * Provee opciones para subir un logo, seleccionar campos visibles y alternar entre entornos TSL.
+ *
+ * @param viewModel Instancia del ViewModel para gestionar el estado y eventos.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
+@SuppressLint("LocalContextResourcesRead")
 @Composable
 fun ConfiguracionScreen(
     viewModel: ConfiguracionViewModel = hiltViewModel(),
 ) {
+
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val borderColor = BorderDashed
@@ -78,19 +90,23 @@ fun ConfiguracionScreen(
         viewModel.onLogoChanged(uri?.toString())
     }
 
-    // Load logo bitmap from URI without Coil
+    // Load logo bitmap from URI or default shield
     val logoBitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = null,
         key1 = state.logoUri,
     ) {
-        value = state.logoUri?.let { uriString ->
+        val customBitmap = state.logoUri?.let { uriString ->
             runCatching {
-                val uri = Uri.parse(uriString)
+                val uri = uriString.toUri()
                 context.contentResolver.openInputStream(uri)?.use { stream ->
                     BitmapFactory.decodeStream(stream)?.asImageBitmap()
                 }
             }.getOrNull()
         }
+        
+        value = customBitmap ?: runCatching {
+            BitmapFactory.decodeResource(context.resources, acj.soluciones.acjsignature.R.raw.escudo_peru)?.asImageBitmap()
+        }.getOrNull()
     }
 
     LaunchedEffect(state.guardado) {
@@ -101,7 +117,6 @@ fun ConfiguracionScreen(
     }
 
     Scaffold(
-        topBar = { ACJTopAppBar() },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(
@@ -138,7 +153,13 @@ fun ConfiguracionScreen(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Se recomienda un logo de 84 × 84 px para mejor resultado",
+                text = buildAnnotatedString {
+                    append("Se recomienda un logo de ")
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("84 × 84 px")
+                    }
+                    append(" para mejor resultado")
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = TextMuted,
             )
@@ -147,7 +168,7 @@ fun ConfiguracionScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(if (logoBitmap != null) 160.dp else 120.dp)
+                    .height(if (logoBitmap != null) 200.dp else 180.dp)
                     .drawBehind {
                         drawRoundRect(
                             color = borderColor,
@@ -175,9 +196,9 @@ fun ConfiguracionScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Logo seleccionado ✓",
+                            text = if (state.logoUri != null) "Logo personalizado ✓" else "Logo por defecto (Escudo)",
                             style = MaterialTheme.typography.bodySmall,
-                            color = GreenDark,
+                            color = if (state.logoUri != null) GreenDark else TextMuted,
                         )
                     } else {
                         Icon(Icons.Filled.CloudUpload, null, tint = Magenta, modifier = Modifier.size(28.dp))
@@ -186,7 +207,7 @@ fun ConfiguracionScreen(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     ACJPrimaryButton(
-                        text = if (logoBitmap != null) "Cambiar logo" else "Seleccionar",
+                        text = if (state.logoUri != null) "Cambiar logo" else "Seleccionar personalizado",
                         onClick = { logoPicker.launch("image/*") },
                     )
                 }
@@ -209,6 +230,26 @@ fun ConfiguracionScreen(
             Spacer(modifier = Modifier.height(8.dp))
             CheckboxItem("Empresa", state.incluirEmpresa, viewModel::onIncluirEmpresaChanged)
             CheckboxItem("Cargo", state.incluirCargo, viewModel::onIncluirCargoChanged)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ── TSL Configuration ────────────────────────
+            Text(
+                text = "Validación (TSL)",
+                style = MaterialTheme.typography.titleLarge,
+                color = DeepPurple,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Selecciona el entorno de confianza para validar firmas",
+                style = MaterialTheme.typography.bodySmall,
+                color = TextMuted,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            CheckboxItem("Usar TSL de prueba (INDECOPI)", state.usarTslPrueba) {
+                viewModel.onUsarTslPruebaChanged(it)
+                com.acj.firma.util.Tsl.limpiarCache(context)
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -318,12 +359,20 @@ fun ConfiguracionScreen(
     }
 }
 
+/**
+ * Componente interno para mostrar una opción de selección con checkbox y etiqueta.
+ *
+ * @param label Texto descriptivo de la opción.
+ * @param checked Estado actual de selección.
+ * @param onCheckedChange Callback para notificar cambios en la selección.
+ */
 @Composable
 private fun CheckboxItem(
     label: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(vertical = 4.dp),

@@ -22,6 +22,18 @@ import acj.soluciones.acjsignature.shared.ui.theme.Magenta
 import acj.soluciones.acjsignature.shared.ui.theme.TextMuted
 import acj.soluciones.acjsignature.shared.ui.theme.White
 
+/**
+ * Botón principal con el color magenta de la marca.
+ * Utilizado para acciones afirmativas primarias.
+ *
+ * @param text Etiqueta de texto a mostrar en mayúsculas.
+ * @param onClick Acción a ejecutar al presionar.
+ * @param modifier Modificador de diseño opcional.
+ * @param enabled Indica si el botón responde a la interacción.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @Composable
 fun ACJPrimaryButton(
     text: String,
@@ -51,6 +63,18 @@ fun ACJPrimaryButton(
     }
 }
 
+/**
+ * Botón con fondo degradado (Magenta a MagentaLight).
+ * Provee una estética premium para acciones destacadas.
+ *
+ * @param text Etiqueta de texto.
+ * @param onClick Acción al presionar.
+ * @param modifier Modificador de diseño.
+ * @param enabled Habilitación del botón.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @Composable
 fun ACJGradientButton(
     text: String,
@@ -84,6 +108,17 @@ fun ACJGradientButton(
     }
 }
 
+/**
+ * Botón con borde (outlined) y texto en color DeepPurple.
+ * Utilizado para acciones secundarias o alternativas.
+ *
+ * @param text Texto del botón.
+ * @param onClick Acción al presionar.
+ * @param modifier Modificador de diseño.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @Composable
 fun ACJOutlinedButton(
     text: String,
@@ -104,8 +139,20 @@ fun ACJOutlinedButton(
     }
 }
 
+/**
+ * Botón secundario con texto atenuado (Muted).
+ * Ideal para acciones de "Cancelar" o menos importantes.
+ *
+ * @param text Texto del botón.
+ * @param onClick Acción al presionar.
+ * @param modifier Modificador de diseño.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @Composable
 fun ACJSecondaryButton(
+
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,

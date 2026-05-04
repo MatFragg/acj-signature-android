@@ -27,7 +27,16 @@ val Manrope = FontFamily(
 )
 
 // ── Typography Scale (mapped to Figma) ──────────────────────────────────
+/**
+ * Escala tipográfica de la aplicación que define los estilos de texto para títulos, cuerpo y etiquetas.
+ * Utiliza las familias de fuentes Poppins, Plus Jakarta Sans y Manrope.
+ *
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 val Typography = Typography(
+
     // Display — Plus Jakarta Sans ExtraBold 48sp (hero titles)
     displayLarge = TextStyle(
         fontFamily = PlusJakartaSans,

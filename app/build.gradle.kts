@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -46,10 +47,13 @@ android {
 }
 
 dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:34.12.0"))
+
     // AAR library
     implementation(project(":acjfirmalib"))
 
     implementation("org.bouncycastle:bcprov-jdk15to18:1.78.1")
+    implementation("org.bouncycastle:bcpkix-jdk15to18:1.78.1")
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
     implementation("androidx.compose.ui:ui-text-google-fonts:1.6.0") // o la versión que uses
     implementation("com.google.android.gms:play-services-basement:18.3.0")

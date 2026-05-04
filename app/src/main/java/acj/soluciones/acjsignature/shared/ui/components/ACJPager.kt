@@ -23,6 +23,20 @@ import acj.soluciones.acjsignature.shared.ui.theme.DeepPurple
 import acj.soluciones.acjsignature.shared.ui.theme.Magenta
 import acj.soluciones.acjsignature.shared.ui.theme.White
 
+/**
+ * Componente de paginación diseñado para la navegación en documentos PDF.
+ * Permite avanzar, retroceder y saltar directamente a una página específica mediante un campo editable.
+ *
+ * @param currentPage Número de la página actual (1-indexed).
+ * @param totalPages Cantidad total de páginas en el documento.
+ * @param onPrevious Callback para navegar a la página anterior.
+ * @param onNext Callback para navegar a la siguiente página.
+ * @param onJumpToPage Callback para saltar a un número de página específico.
+ * @param modifier Modificador de diseño opcional.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ACJPager(
@@ -33,6 +47,7 @@ fun ACJPager(
     onJumpToPage: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+
     var textValue by remember(currentPage) { mutableStateOf(currentPage.toString()) }
 
     Row(

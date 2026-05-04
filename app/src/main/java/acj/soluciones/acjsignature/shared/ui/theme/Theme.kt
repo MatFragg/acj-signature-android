@@ -51,11 +51,22 @@ private val DarkColorScheme = darkColorScheme(
     onError = White,
 )
 
+/**
+ * Configuración del tema global de la aplicación basado en Material Design 3.
+ * Define las paletas de colores para modo claro y oscuro, tipografía y formas personalizadas.
+ *
+ * @param darkTheme Indica si se debe aplicar el esquema de colores oscuro.
+ * @param content El árbol de componentes (Composables) que se renderizará bajo este tema.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @Composable
 fun ACJSignatureTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
+
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(

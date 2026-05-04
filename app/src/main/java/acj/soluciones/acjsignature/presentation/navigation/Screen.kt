@@ -9,12 +9,25 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
+/**
+ * Representa los diferentes destinos de navegación dentro de la aplicación.
+ * Define rutas, títulos y recursos visuales para la integración con Jetpack Navigation y UI.
+ *
+ * @property route Identificador único de la ruta de navegación.
+ * @property title Título legible para mostrar en la UI.
+ * @property selectedIcon Icono mostrado cuando el destino está seleccionado.
+ * @property unselectedIcon Icono mostrado en estado inactivo.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 sealed class Screen(
     val route: String,
     val title: String = "",
     val selectedIcon: ImageVector? = null,
     val unselectedIcon: ImageVector? = null,
 ) {
+
     data object Home : Screen(
         route = "home",
         title = "Inicio",
@@ -25,7 +38,12 @@ sealed class Screen(
     data object SubirPdf : Screen(route = "subir_pdf", title = "Firmar Documento")
 
     data object PosicionarFirma : Screen(route = "posicionar_firma/{docId}", title = "Posicionar Firma") {
+        /**
+         * Genera la ruta dinámica para posicionar firma incluyendo el ID del documento.
+         * @param docId Identificador único del documento en la base de datos.
+         */
         fun createRoute(docId: Long) = "posicionar_firma/$docId"
+
     }
 
     data object DocumentosFirmados : Screen(
@@ -43,6 +61,19 @@ sealed class Screen(
         selectedIcon = Icons.Filled.Settings,
         unselectedIcon = Icons.Outlined.Settings,
     )
+
+    data object ValidarPdf : Screen(route = "validar_pdf", title = "Validar PDF")
+    
+    data object ResultadoValidacion : Screen(route = "resultado_validacion", title = "Resultado Validación")
+    
+    data object DetalleFirmante : Screen(route = "detalle_firmante/{index}", title = "Detalle Firmante") {
+        /**
+         * Genera la ruta dinámica para el detalle de un firmante específico.
+         * @param index Índice de la firma dentro de la lista de validación.
+         */
+        fun createRoute(index: Int) = "detalle_firmante/$index"
+
+    }
 
     companion object {
         val bottomNavItems = listOf(Home, DocumentosFirmados, Configuracion)

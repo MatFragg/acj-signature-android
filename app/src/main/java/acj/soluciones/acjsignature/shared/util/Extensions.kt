@@ -6,7 +6,12 @@ import java.io.File
 import java.io.FileOutputStream
 
 /**
- * Formats bytes into a human-readable size string.
+ * Formatea un valor de tipo Long (bytes) hacia una cadena legible (B, KB, MB).
+ *
+ * @return Cadena formateada con la unidad de medida correspondiente.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
  */
 fun Long.toFormattedSize(): String = when {
     this < 1024 -> "$this B"
@@ -15,7 +20,12 @@ fun Long.toFormattedSize(): String = when {
 }
 
 /**
- * Converts a timestamp to a relative time string in Spanish.
+ * Convierte un timestamp en una cadena de tiempo relativo en español.
+ *
+ * @return Texto descriptivo del tiempo transcurrido (ej. "Hace 5 min").
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
  */
 fun Long.toRelativeTime(): String {
     val now = System.currentTimeMillis()
@@ -34,7 +44,14 @@ fun Long.toRelativeTime(): String {
 }
 
 /**
- * Copies a content URI into a destination File.
+ * Copia el contenido de un URI hacia un archivo físico en el almacenamiento interno.
+ *
+ * @param context Contexto necesario para acceder al ContentResolver.
+ * @param destFile Archivo de destino donde se escribirá el contenido.
+ * @return El archivo de destino tras completar la copia.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
  */
 fun Uri.copyToFile(context: Context, destFile: File): File {
     context.contentResolver.openInputStream(this)?.use { input ->
@@ -46,7 +63,13 @@ fun Uri.copyToFile(context: Context, destFile: File): File {
 }
 
 /**
- * Gets the file name from a content URI.
+ * Recupera el nombre del archivo asociado a un URI de contenido.
+ *
+ * @param context Contexto para la consulta al ContentResolver.
+ * @return Nombre del archivo con su extensión o un nombre por defecto.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
  */
 fun Uri.getFileName(context: Context): String {
     var name = "documento.pdf"
@@ -60,7 +83,13 @@ fun Uri.getFileName(context: Context): String {
 }
 
 /**
- * Gets the file size from a content URI.
+ * Obtiene el tamaño en bytes de un archivo identificado por un URI.
+ *
+ * @param context Contexto para la consulta al ContentResolver.
+ * @return Tamaño del archivo en bytes o 0 si no se puede determinar.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
  */
 fun Uri.getFileSize(context: Context): Long {
     var size = 0L

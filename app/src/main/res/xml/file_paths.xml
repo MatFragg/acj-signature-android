@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Almacenamiento Interno (getFilesDir) -->
+    <files-path name="internal_files" path="." />
+    
+    <!-- Almacenamiento Externo Privado (getExternalFilesDir) -->
+    <external-files-path name="external_files" path="." />
+
+    <!-- Cache Interno (getCacheDir) -->
+    <cache-path name="internal_cache" path="." />
+</paths>

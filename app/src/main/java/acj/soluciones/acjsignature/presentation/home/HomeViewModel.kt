@@ -9,10 +9,20 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
+/**
+ * ViewModel que gestiona la lógica de la pantalla de inicio.
+ * Provee un flujo de datos reactivo con los documentos más recientes.
+ *
+ * @property documentoRepository Repositorio para acceder al historial de documentos.
+ * @author Ethan Matias Aliaga Aguirre
+ * @date 2026-05-01
+ * @version 1.0
+ */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     documentoRepository: DocumentoRepository,
 ) : ViewModel() {
+
 
     val state = documentoRepository.getRecientes(5)
         .map { docs -> HomeState(documentosRecientes = docs) }
