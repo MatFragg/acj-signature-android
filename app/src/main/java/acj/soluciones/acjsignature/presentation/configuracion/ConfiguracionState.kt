@@ -17,7 +17,6 @@ data class ConfiguracionState(
     val logoUri: String? = null,
     val incluirEmpresa: Boolean = true,
     val incluirCargo: Boolean = true,
-    val usarTslPrueba: Boolean = false,
     val isLoading: Boolean = false,
     val guardado: Boolean = false,
 )

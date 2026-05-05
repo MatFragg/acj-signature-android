@@ -44,7 +44,7 @@ fun HomeScreen(
     onNavigateToFirmar: () -> Unit,
     onNavigateToCertificados: () -> Unit,
     onNavigateToDocumentos: () -> Unit,
-    onNavigateToConfiguracion: () -> Unit,
+    onNavigateToAjustes: () -> Unit,
     onNavigateToValidar: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -128,10 +128,10 @@ fun HomeScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
             ACJFeatureCard(
-                title = "Configuración",
-                description = "Parámetros de firma y seguridad",
+                title = "Ajustes",
+                description = "Preferencias de firma y seguridad",
                 icon = Icons.Filled.Settings,
-                onClick = onNavigateToConfiguracion,
+                onClick = onNavigateToAjustes,
             )
 
             Spacer(modifier = Modifier.height(28.dp))

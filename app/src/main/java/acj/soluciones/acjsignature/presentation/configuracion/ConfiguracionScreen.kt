@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.VerifiedUser
@@ -29,6 +30,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -62,6 +64,9 @@ import acj.soluciones.acjsignature.shared.ui.components.ACJPrimaryButton
 import acj.soluciones.acjsignature.shared.ui.components.ACJSecondaryButton
 import acj.soluciones.acjsignature.shared.ui.theme.*
 import android.annotation.SuppressLint
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.core.net.toUri
 
 /**
@@ -73,9 +78,11 @@ import androidx.core.net.toUri
  * @date 2026-05-01
  * @version 1.0
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("LocalContextResourcesRead")
 @Composable
 fun ConfiguracionScreen(
+    onNavigateBack: () -> Unit,
     viewModel: ConfiguracionViewModel = hiltViewModel(),
 ) {
 
@@ -117,25 +124,44 @@ fun ConfiguracionScreen(
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Configuración de Firma", color = DeepPurple, fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Regresar", tint = DeepPurple)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = White)
+            )
+        },
+        containerColor = SurfaceBg,
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
+                .padding(20.dp),
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            /*Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Title ────────────────────────────────────
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(SpanStyle(color = DeepPurple)) { append("Configuración\nde ") }
-                    withStyle(SpanStyle(color = Magenta)) { append("Firma") }
-                },
-                style = MaterialTheme.typography.headlineLarge,
-            )
+            // ── Top Bar / Title ──────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onNavigateBack, modifier = Modifier.padding(end = 8.dp)) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Regresar", tint = DeepPurple)
+                }
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(color = DeepPurple)) { append("Configuración\nde ") }
+                        withStyle(SpanStyle(color = Magenta)) { append("Firma") }
+                    },
+                    style = MaterialTheme.typography.headlineLarge,
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Personaliza la apariencia de tu firma digital",
@@ -143,7 +169,7 @@ fun ConfiguracionScreen(
                 color = TextBody,
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))*/
 
             // ── Logo Upload ──────────────────────────────
             Text(
@@ -151,7 +177,7 @@ fun ConfiguracionScreen(
                 style = MaterialTheme.typography.titleLarge,
                 color = DeepPurple,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = buildAnnotatedString {
                     append("Se recomienda un logo de ")
@@ -213,7 +239,7 @@ fun ConfiguracionScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // ── Field Checkboxes ─────────────────────────
             Text(
@@ -231,27 +257,7 @@ fun ConfiguracionScreen(
             CheckboxItem("Empresa", state.incluirEmpresa, viewModel::onIncluirEmpresaChanged)
             CheckboxItem("Cargo", state.incluirCargo, viewModel::onIncluirCargoChanged)
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ── TSL Configuration ────────────────────────
-            Text(
-                text = "Validación (TSL)",
-                style = MaterialTheme.typography.titleLarge,
-                color = DeepPurple,
-            )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Selecciona el entorno de confianza para validar firmas",
-                style = MaterialTheme.typography.bodySmall,
-                color = TextMuted,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            CheckboxItem("Usar TSL de prueba (INDECOPI)", state.usarTslPrueba) {
-                viewModel.onUsarTslPruebaChanged(it)
-                com.acj.firma.util.Tsl.limpiarCache(context)
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
 
             // ── Signature Preview ────────────────────────
             Text(

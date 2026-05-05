@@ -9,6 +9,7 @@ import acj.soluciones.acjsignature.domain.repository.FirmaRepository
 import acj.soluciones.acjsignature.domain.usecase.FirmarDocumentoUseCase
 import acj.soluciones.acjsignature.data.local.storage.FileStorageManager
 import acj.soluciones.acjsignature.shared.domain.Result
+import acj.soluciones.acjsignature.shared.util.AppLogger
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
@@ -39,6 +40,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
  * @property configDataStore Almacén de configuraciones visuales.
  * @property firmarDocumentoUseCase Caso de uso para la firma criptográfica.
  * @property fileStorageManager Gestor de archivos y rutas.
+ * @property logger Logger para registrar auditoría del proceso.
  * @author Ethan Matias Aliaga Aguirre
  * @date 2026-05-01
  * @version 1.0
@@ -50,7 +52,8 @@ class PosicionarFirmaViewModel @Inject constructor(
     private val firmaRepository: FirmaRepository,
     private val configDataStore: ConfigDataStore,
     private val firmarDocumentoUseCase: FirmarDocumentoUseCase,
-    private val fileStorageManager: FileStorageManager
+    private val fileStorageManager: FileStorageManager,
+    private val logger: AppLogger
 ) : ViewModel() {
 
 
@@ -66,7 +69,7 @@ class PosicionarFirmaViewModel @Inject constructor(
      * @param docId ID del documento en la base de datos local.
      */
     fun loadDocument(docId: Long) {
-
+        logger.info("Preparando posicionamiento de firma para documento ID: $docId")
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, documentoId = docId) }
 
@@ -106,6 +109,7 @@ class PosicionarFirmaViewModel @Inject constructor(
             if (documento != null) {
                 val file = File(documento.rutaOriginal)
                 if (file.exists()) {
+                    logger.info("Documento ${file.name} cargado para previsualización.")
                     initPdfRenderer(file)
                     _state.update { 
                         it.copy(
@@ -115,9 +119,11 @@ class PosicionarFirmaViewModel @Inject constructor(
                         ) 
                     }
                 } else {
+                    logger.error("Archivo no encontrado físicamente: ${documento.rutaOriginal}")
                     _state.update { it.copy(isLoading = false, error = "El archivo PDF ya no existe en la ruta.") }
                 }
             } else {
+                logger.error("Documento con ID $docId no encontrado en DB.")
                 _state.update { it.copy(isLoading = false, error = "Documento no encontrado.") }
             }
         }
@@ -130,10 +136,12 @@ class PosicionarFirmaViewModel @Inject constructor(
                 pdfRenderer = PdfRenderer(fileDescriptor!!)
                 
                 val total = pdfRenderer?.pageCount ?: 1
+                logger.debug("PDF Renderer inicializado: ${file.name} ($total páginas)")
                 _state.update { it.copy(totalPages = total) }
                 
                 renderPage(0)
             } catch (e: Exception) {
+                logger.error("Error inicializando PdfRenderer", e)
                 _state.update { it.copy(error = "No se pudo cargar el visor de PDF: ${e.message}") }
             }
         }
@@ -210,7 +218,7 @@ class PosicionarFirmaViewModel @Inject constructor(
      * @param altoVisible Alto del sello de firma.
      */
     fun solicitarFirma(certificado: Certificado, pdfX: Int, pdfY: Int, anchoVisible: Int, altoVisible: Int) {
-
+        logger.info("Solicitud de firma iniciada por el usuario en página ${_state.value.currentPage}")
         firmarDocumento(certificado, pdfX, pdfY, anchoVisible, altoVisible)
     }
 
@@ -248,8 +256,10 @@ class PosicionarFirmaViewModel @Inject constructor(
                 )
             )
 
+            logger.info("Enviando parámetros a FirmarDocumentoUseCase para ${archivo.name}")
             when (val result = firmarDocumentoUseCase(documentoFirma)) {
                 is Result.Success -> {
+                    logger.info("Firma criptográfica completada con éxito para ${archivo.name}")
                     // Update the Documento repository with the signed file path
                     documentoRepository.actualizarEstado(
                         id = currentState.documentoId,
@@ -259,6 +269,7 @@ class PosicionarFirmaViewModel @Inject constructor(
                     _state.update { it.copy(isSigning = false, firmaExitosa = true) }
                 }
                 is Result.Error -> {
+                    logger.error("Firma fallida para ${archivo.name}: ${result.message}", result.cause)
                     _state.update { it.copy(isSigning = false, error = result.message) }
                 }
                 is Result.Loading -> {

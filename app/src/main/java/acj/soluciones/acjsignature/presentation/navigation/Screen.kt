@@ -55,12 +55,20 @@ sealed class Screen(
 
     data object Certificados : Screen(route = "certificados", title = "Certificados")
 
-    data object Configuracion : Screen(
-        route = "configuracion",
+    data object Ajustes : Screen(
+        route = "ajustes",
         title = "Ajustes",
         selectedIcon = Icons.Filled.Settings,
         unselectedIcon = Icons.Outlined.Settings,
     )
+
+    data object ConfiguracionFirma : Screen(route = "configuracion_firma", title = "Configuración de Firma")
+
+    data object TslConfig : Screen(route = "tsl_config", title = "Configuración TSL")
+
+    data object LogsAuditoria : Screen(route = "logs_auditoria", title = "Logs de Auditoría")
+
+    data object AcercaDe : Screen(route = "acerca_de", title = "Acerca de ACJSignature")
 
     data object ValidarPdf : Screen(route = "validar_pdf", title = "Validar PDF")
     
@@ -76,6 +84,6 @@ sealed class Screen(
     }
 
     companion object {
-        val bottomNavItems = listOf(Home, DocumentosFirmados, Configuracion)
+        val bottomNavItems = listOf(Home, DocumentosFirmados, Ajustes)
     }
 }

@@ -19,6 +19,10 @@ import acj.soluciones.acjsignature.presentation.firma.FirmaScreen
 import acj.soluciones.acjsignature.presentation.firma.PosicionarFirmaScreen
 import acj.soluciones.acjsignature.presentation.home.HomeScreen
 import acj.soluciones.acjsignature.presentation.validacion.ValidacionScreen
+import acj.soluciones.acjsignature.presentation.ajustes.AjustesScreen
+import acj.soluciones.acjsignature.presentation.ajustes.AcercaDeScreen
+import acj.soluciones.acjsignature.presentation.logs.LogsAuditoriaScreen
+import acj.soluciones.acjsignature.presentation.tsl.TSLScreen
 import acj.soluciones.acjsignature.shared.ui.components.ACJBottomNavBar
 
 /**
@@ -82,8 +86,8 @@ fun AppNavGraph(
                             restoreState = true
                         }
                     },
-                    onNavigateToConfiguracion = {
-                        navController.navigate(Screen.Configuracion.route) {
+                    onNavigateToAjustes = {
+                        navController.navigate(Screen.Ajustes.route) {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
@@ -128,8 +132,38 @@ fun AppNavGraph(
                 CertificadosScreen()
             }
 
-            composable(Screen.Configuracion.route) {
-                ConfiguracionScreen()
+            composable(Screen.Ajustes.route) {
+                AjustesScreen(
+                    onNavigateToAcercaDe = { navController.navigate(Screen.AcercaDe.route) },
+                    onNavigateToConfiguracionFirma = { navController.navigate(Screen.ConfiguracionFirma.route) },
+                    onNavigateToTSL = { navController.navigate(Screen.TslConfig.route) },
+                    onNavigateToLogs = { navController.navigate(Screen.LogsAuditoria.route) },
+                    onLogout = { /* Placeholder: No implementado aún */ }
+                )
+            }
+
+            composable(Screen.ConfiguracionFirma.route) {
+                ConfiguracionScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.TslConfig.route) {
+                TSLScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.LogsAuditoria.route) {
+                LogsAuditoriaScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.AcercaDe.route) {
+                AcercaDeScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
 
             navigation(

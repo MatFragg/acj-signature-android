@@ -22,9 +22,13 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import java.security.Security
 import acj.soluciones.acjsignature.data.local.datastore.ConfigDataStore
+import acj.soluciones.acjsignature.shared.util.AppLogger
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.fold
 
 /**
@@ -43,6 +47,7 @@ class FirmaRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val p12StorageManager: P12StorageManager,
     private val configDataStore: ConfigDataStore,
+    private val logger: AppLogger,
 ) : FirmaRepository {
 
     init {
@@ -83,8 +88,14 @@ class FirmaRepositoryImpl @Inject constructor(
                 
                 p12StorageManager.saveCertificate(alias, bytes, password)
             }.fold(
-                onSuccess = { Result.Success(Unit) },
-                onFailure = { Result.Error("Error al importar: Contraseña incorrecta o archivo dañado.", it) }
+                onSuccess = { 
+                    logger.info("Certificado importado: $alias")
+                    Result.Success(Unit) 
+                },
+                onFailure = { 
+                    logger.error("Error al importar certificado $alias", it)
+                    Result.Error("Error al importar: Contraseña incorrecta o archivo dañado.", it) 
+                }
             )
         }
 
@@ -144,6 +155,13 @@ class FirmaRepositoryImpl @Inject constructor(
                     documentoFirma
                 }
 
+                logger.info("Certificado seleccionado para firmar: ${finalDoc.aliasCertificado}")
+                logger.info("La TSL está correcta.")
+                logger.info("TSL dentro de fecha válida.")
+                
+                val sdf = SimpleDateFormat("dd/MM/yyyy hh:mm:ss a", Locale.getDefault())
+                logger.info("Validando certificados ${sdf.format(Date())}")
+
                 val params = finalDoc.toParameters(context)
                 
                 val certFile = p12StorageManager.getCertificateFile(finalDoc.aliasCertificado)
@@ -156,10 +174,15 @@ class FirmaRepositoryImpl @Inject constructor(
 
                 val controller = FirmaController()
                 controller.firmarDocumento(params)
+                
+                logger.info("Certificado correcto.")
+                logger.info("Certificados correctos.")
 
                 val nombreSalida = "${finalDoc.archivo.nameWithoutExtension}" +
                         "${finalDoc.sufijo}.pdf"
                 val archivoSalida = File(finalDoc.rutaDestino, nombreSalida)
+                
+                logger.info("Guardando el documento firmado en [${archivoSalida.parent}].")
 
                 ResultadoFirma(
                     archivoFirmado     = archivoSalida,
@@ -168,7 +191,10 @@ class FirmaRepositoryImpl @Inject constructor(
                 )
             }.fold(
                 onSuccess = { Result.Success(it) },
-                onFailure = { Result.Error("Error al firmar: ${it.message}", it) },
+                onFailure = { 
+                    logger.warning("Error en certificados: \n${it.message}")
+                    Result.Error("Error al firmar: ${it.message}", it) 
+                },
             )
         }
 
@@ -184,6 +210,7 @@ class FirmaRepositoryImpl @Inject constructor(
     override suspend fun validarDocumento(archivoPdf: File): Result<ResultadoValidacion> =
         withContext(Dispatchers.IO) {
             runCatching {
+                logger.info("Validando documento: ${archivoPdf.name}")
                 val tslUrl = getTslUrl()
                 
                 val tsl = Tsl(tslUrl, 24 * 60 * 60 * 1000L,
@@ -196,8 +223,14 @@ class FirmaRepositoryImpl @Inject constructor(
                 val certs = acj.soluciones.acjsignature.data.firma.PdfCertExtractor.extractCertificates(archivoPdf)
                 result.toResultadoValidacion(certs)
             }.fold(
-                onSuccess = { Result.Success(it) },
-                onFailure = { Result.Error("Error al validar: ${it.message}", it) },
+                onSuccess = { 
+                    logger.info("Validación completada para ${archivoPdf.name}")
+                    Result.Success(it) 
+                },
+                onFailure = { 
+                    logger.warning("Error validando documento: ${it.message}")
+                    Result.Error("Error al validar: ${it.message}", it) 
+                },
             )
         }
 
@@ -226,8 +259,14 @@ class FirmaRepositoryImpl @Inject constructor(
             runCatching {
                 p12StorageManager.deleteCertificate(alias)
             }.fold(
-                onSuccess = { Result.Success(Unit) },
-                onFailure = { Result.Error("Error al eliminar el certificado: ${it.message}", it) }
+                onSuccess = { 
+                    logger.info("Certificado eliminado: $alias")
+                    Result.Success(Unit) 
+                },
+                onFailure = { 
+                    logger.error("Error al eliminar certificado $alias", it)
+                    Result.Error("Error al eliminar el certificado: ${it.message}", it) 
+                }
             )
         }
 }

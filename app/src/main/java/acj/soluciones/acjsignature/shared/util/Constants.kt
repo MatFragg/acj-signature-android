@@ -14,6 +14,7 @@ object Constants {
     const val DIR_ORIGINALES = "originales"
     const val DIR_FIRMADOS = "firmados"
     const val SUFIJO_FIRMADO = "_firmado"
+    const val DIR_LOGS = "logs"
     const val DB_NAME = "acj_signature_db"
     const val DATASTORE_NAME = "acj_preferences"
 }

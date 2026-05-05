@@ -7,6 +7,7 @@ import acj.soluciones.acjsignature.data.local.storage.FileStorageManager
 import acj.soluciones.acjsignature.domain.model.DocumentoFirmado
 import acj.soluciones.acjsignature.domain.model.EstadisticasDocumentos
 import acj.soluciones.acjsignature.domain.repository.DocumentoRepository
+import acj.soluciones.acjsignature.shared.util.AppLogger
 import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,7 @@ import javax.inject.Singleton
  *
  * @property dao Acceso a datos para la persistencia en base de datos.
  * @property fileStorage Gestor de archivos para la manipulación física de documentos.
+ * @property logger Logger para registrar auditoría del proceso.
  * @author Ethan Matias Aliaga Aguirre
  * @date 2026-05-01
  * @version 1.0
@@ -30,6 +32,7 @@ import javax.inject.Singleton
 class DocumentoRepositoryImpl @Inject constructor(
     private val dao: DocumentoDao,
     private val fileStorage: FileStorageManager,
+    private val logger: AppLogger
 ) : DocumentoRepository {
 
     /**
@@ -86,13 +89,16 @@ class DocumentoRepositoryImpl @Inject constructor(
      */
     override suspend fun guardarDocumento(uri: Uri, fileName: String, fileSize: Long): Long =
         withContext(Dispatchers.IO) {
+            logger.info("Guardando nuevo documento: $fileName ($fileSize bytes)")
             val file = fileStorage.saveOriginalPdf(uri, fileName)
             val entity = DocumentoEntity(
                 nombre = fileName,
                 rutaOriginal = file.absolutePath,
                 tamano = fileSize,
             )
-            dao.insert(entity)
+            val id = dao.insert(entity)
+            logger.debug("Documento registrado en DB con ID: $id")
+            id
         }
 
     /**
@@ -105,6 +111,7 @@ class DocumentoRepositoryImpl @Inject constructor(
     override suspend fun actualizarEstado(id: Long, estado: String, rutaFirmado: String?) {
         withContext(Dispatchers.IO) {
             dao.getById(id)?.let { entity ->
+                logger.info("Actualizando estado de documento ${entity.nombre}: $estado")
                 dao.update(
                     entity.copy(
                         estado = estado,
@@ -127,6 +134,7 @@ class DocumentoRepositoryImpl @Inject constructor(
     override suspend fun actualizarPosicionFirma(id: Long, x: Int, y: Int, pagina: Int) {
         withContext(Dispatchers.IO) {
             dao.getById(id)?.let { entity ->
+                logger.debug("Actualizando posición de firma para ${entity.nombre} en página $pagina (X:$x, Y:$y)")
                 dao.update(
                     entity.copy(
                         posicionFirmaX = x,
@@ -157,6 +165,7 @@ class DocumentoRepositoryImpl @Inject constructor(
     override suspend fun eliminar(id: Long) {
         withContext(Dispatchers.IO) {
             dao.getById(id)?.let { entity ->
+                logger.warning("Eliminando documento y archivos físicos: ${entity.nombre}")
                 fileStorage.deleteFile(entity.rutaOriginal)
                 entity.rutaFirmado?.let { fileStorage.deleteFile(it) }
                 dao.deleteById(id)

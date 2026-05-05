@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import acj.soluciones.acjsignature.domain.repository.FirmaRepository
 import acj.soluciones.acjsignature.shared.domain.Result
+import acj.soluciones.acjsignature.shared.util.AppLogger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ import javax.inject.Inject
  * y eliminar certificados existentes.
  *
  * @property firmaRepository Repositorio para la gestión de llaves y certificados.
+ * @property logger Logger para registrar auditoría del proceso.
  * @author Ethan Matias Aliaga Aguirre
  * @date 2026-05-01
  * @version 1.0
@@ -27,6 +29,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CertificadosViewModel @Inject constructor(
     private val firmaRepository: FirmaRepository,
+    private val logger: AppLogger
 ) : ViewModel() {
 
 
@@ -38,6 +41,7 @@ class CertificadosViewModel @Inject constructor(
     private var pendingP12Bytes: ByteArray? = null
 
     init {
+        logger.info("Cargando lista de certificados al inicializar.")
         cargarCertificados()
     }
 
@@ -50,11 +54,13 @@ class CertificadosViewModel @Inject constructor(
             _state.update { it.copy(isLoading = true) }
             when (val result = firmaRepository.listarCertificados()) {
                 is Result.Success -> {
+                    logger.info("Se encontraron ${result.data.size} certificados.")
                     _state.update {
                         it.copy(certificados = result.data, isLoading = false)
                     }
                 }
                 is Result.Error -> {
+                    logger.error("Error cargando certificados", result.cause)
                     _state.update {
                         it.copy(error = result.message, isLoading = false)
                     }
@@ -75,7 +81,7 @@ class CertificadosViewModel @Inject constructor(
      * @param bytes Contenido binario del archivo.
      */
     fun onP12Selected(uri: Uri, bytes: ByteArray) {
-
+        logger.info("Archivo .p12 seleccionado para importar: ${uri.path}")
         pendingP12Uri = uri
         pendingP12Bytes = bytes
         _state.update { it.copy(showPasswordDialog = true) }
@@ -91,6 +97,7 @@ class CertificadosViewModel @Inject constructor(
 
         viewModelScope.launch {
             _state.update { it.copy(showPasswordDialog = false, isLoading = true) }
+            logger.info("Validando contraseña del certificado...")
 
             // Verificar la contraseña antes de pedir el PIN
             val isValid = withContext(Dispatchers.IO) {
@@ -101,9 +108,11 @@ class CertificadosViewModel @Inject constructor(
             }
 
             if (isValid) {
+                logger.info("Contraseña correcta. Iniciando importación.")
                 val alias = "cert_${System.currentTimeMillis()}"
                 when (val result = firmaRepository.importarCertificado(bytes, password, alias)) {
                     is Result.Success -> {
+                        logger.info("Importación exitosa de $alias")
                         clearPendingState()
                         _state.update {
                             it.copy(
@@ -114,6 +123,7 @@ class CertificadosViewModel @Inject constructor(
                         cargarCertificados()
                     }
                     is Result.Error -> {
+                        logger.error("Error en repositorio durante importación", result.cause)
                         _state.update {
                             it.copy(
                                 isLoading = false,
@@ -126,6 +136,7 @@ class CertificadosViewModel @Inject constructor(
                     }
                 }
             } else {
+                logger.warning("Intento de importación fallido: Contraseña incorrecta.")
                 _state.update {
                     it.copy(
                         isLoading = false,
@@ -140,7 +151,7 @@ class CertificadosViewModel @Inject constructor(
      * Cancela el proceso de importación actual y limpia los datos temporales.
      */
     fun onCancelImport() {
-
+        logger.info("Importación cancelada por el usuario.")
         clearPendingState()
         _state.update { it.copy(showPasswordDialog = false) }
     }
@@ -158,14 +169,16 @@ class CertificadosViewModel @Inject constructor(
      * @param alias Identificador único del certificado a eliminar.
      */
     fun eliminarCertificado(alias: String) {
-
+        logger.warning("Solicitud de eliminación para certificado: $alias")
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             when (val result = firmaRepository.eliminarCertificado(alias)) {
                 is Result.Success -> {
+                    logger.info("Certificado $alias eliminado correctamente.")
                     cargarCertificados()
                 }
                 is Result.Error -> {
+                    logger.error("Error eliminando certificado $alias", result.cause)
                     _state.update { it.copy(isLoading = false, error = result.message) }
                 }
                 else -> {

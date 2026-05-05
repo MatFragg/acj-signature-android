@@ -37,7 +37,6 @@ class ConfiguracionViewModel @Inject constructor(
                         logoUri = config.logoUri,
                         incluirEmpresa = config.incluirEmpresa,
                         incluirCargo = config.incluirCargo,
-                        usarTslPrueba = config.usarTslPrueba,
                         isLoading = false,
                     )
                 }
@@ -72,14 +71,6 @@ class ConfiguracionViewModel @Inject constructor(
         _state.update { it.copy(incluirCargo = value) }
     }
 
-    /**
-     * Cambia la preferencia de usar la TSL de prueba.
-     * @param value true para activar validaciones de prueba.
-     */
-    fun onUsarTslPruebaChanged(value: Boolean) {
-
-        _state.update { it.copy(usarTslPrueba = value) }
-    }
 
     /**
      * Persiste la configuración actual en el DataStore.
@@ -93,7 +84,6 @@ class ConfiguracionViewModel @Inject constructor(
                     logoUri = s.logoUri,
                     incluirEmpresa = s.incluirEmpresa,
                     incluirCargo = s.incluirCargo,
-                    usarTslPrueba = s.usarTslPrueba,
                 )
             )
             _state.update { it.copy(guardado = true) }
@@ -112,7 +102,6 @@ class ConfiguracionViewModel @Inject constructor(
                         logoUri = config.logoUri,
                         incluirEmpresa = config.incluirEmpresa,
                         incluirCargo = config.incluirCargo,
-                        usarTslPrueba = config.usarTslPrueba,
                     )
                 }
             }
