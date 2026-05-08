@@ -83,6 +83,9 @@ sealed class Screen(
 
     }
 
+    data object Login : Screen(route = "login", title = "Iniciar Sesión")
+    data object Register : Screen(route = "register", title = "Crear Cuenta")
+
     companion object {
         val bottomNavItems = listOf(Home, DocumentosFirmados, Ajustes)
     }

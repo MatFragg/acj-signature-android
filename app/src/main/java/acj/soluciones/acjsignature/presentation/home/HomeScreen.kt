@@ -52,7 +52,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(top = padding.calculateTopPadding())
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp),
         ) {
@@ -96,7 +96,7 @@ fun HomeScreen(
                 color = TextBody,
             )
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             // Opciones
             ACJFeatureCard(

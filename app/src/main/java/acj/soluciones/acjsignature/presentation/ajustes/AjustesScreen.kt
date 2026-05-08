@@ -13,6 +13,10 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.text.font.FontWeight
 import acj.soluciones.acjsignature.shared.ui.components.ACJFeatureCard
 import acj.soluciones.acjsignature.shared.ui.theme.*
 
@@ -26,15 +30,18 @@ fun AjustesScreen(
     onNavigateToConfiguracionFirma: () -> Unit,
     onNavigateToTSL: () -> Unit,
     onNavigateToLogs: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    viewModel: AjustesViewModel = hiltViewModel()
 ) {
+    val userFullName by viewModel.userFullName.collectAsState()
+
     Scaffold(
         containerColor = SurfaceBg
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(top = padding.calculateTopPadding())
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
         ) {
@@ -52,6 +59,13 @@ fun AjustesScreen(
                 text = "Gestiona tus preferencias de firma y seguridad.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextBody,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "Sesión activa: $userFullName",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = Magenta
             )
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -99,7 +113,11 @@ fun AjustesScreen(
 
             // Logout / Cerrar sesión
             TextButton(
-                onClick = onLogout,
+                onClick = {
+                    viewModel.logout {
+                        onLogout()
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

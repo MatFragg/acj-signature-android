@@ -18,7 +18,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import acj.soluciones.acjsignature.shared.ui.theme.*
@@ -38,14 +37,6 @@ fun LogsAuditoriaScreen(
     viewModel: LogViewModel = hiltViewModel()
 ) {
     val logs by viewModel.logs.collectAsStateWithLifecycle()
-    val listState = rememberLazyListState()
-
-    // Auto-scroll to bottom when logs change
-    LaunchedEffect(logs.size) {
-        if (logs.isNotEmpty()) {
-            listState.animateScrollToItem(logs.size - 1)
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -81,7 +72,6 @@ fun LogsAuditoriaScreen(
                 }
             } else {
                 LazyColumn(
-                    state = listState,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp, vertical = 8.dp)

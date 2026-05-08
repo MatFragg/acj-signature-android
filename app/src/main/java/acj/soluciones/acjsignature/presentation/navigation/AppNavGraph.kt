@@ -1,9 +1,12 @@
 package acj.soluciones.acjsignature.presentation.navigation
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -23,6 +26,9 @@ import acj.soluciones.acjsignature.presentation.ajustes.AjustesScreen
 import acj.soluciones.acjsignature.presentation.ajustes.AcercaDeScreen
 import acj.soluciones.acjsignature.presentation.logs.LogsAuditoriaScreen
 import acj.soluciones.acjsignature.presentation.tsl.TSLScreen
+import acj.soluciones.acjsignature.presentation.login.LoginScreen
+import acj.soluciones.acjsignature.presentation.register.RegisterScreen
+import acj.soluciones.acjsignature.presentation.main.MainViewModel
 import acj.soluciones.acjsignature.shared.ui.components.ACJBottomNavBar
 
 /**
@@ -38,30 +44,35 @@ import acj.soluciones.acjsignature.shared.ui.components.ACJBottomNavBar
 @Composable
 fun AppNavGraph(
     navController: NavHostController = rememberNavController(),
+    mainViewModel: MainViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 ) {
-
+    val isLoggedIn by mainViewModel.isLoggedIn.collectAsState(initial = false)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     // Routes that show the bottom nav bar
     val showBottomBar = currentRoute in Screen.bottomNavItems.map { it.route }
 
+    androidx.compose.runtime.LaunchedEffect(isLoggedIn) {
+        if (!isLoggedIn && currentRoute != Screen.Register.route && currentRoute != Screen.Login.route) {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
         bottomBar = {
             if (showBottomBar) {
                 ACJBottomNavBar(
                     currentRoute = currentRoute,
                     onItemSelected = { screen ->
                         navController.navigate(screen.route) {
-                            // Pop up to the start destination of the graph to
-                            // avoid building up a large stack of destinations
-                            popUpTo(navController.graph.startDestinationId) {
+                            popUpTo(Screen.Home.route) {
                                 saveState = true
                             }
-                            // Avoid multiple copies of the same destination when
-                            // reselecting the same item
                             launchSingleTop = true
-                            // Restore state when reselecting a previously selected item
                             restoreState = true
                         }
                     },
@@ -72,9 +83,37 @@ fun AppNavGraph(
 
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding),
+            startDestination = if (isLoggedIn) Screen.Home.route else Screen.Login.route,
+            modifier = Modifier.padding(
+                top = innerPadding.calculateTopPadding(),
+                bottom = if (showBottomBar) innerPadding.calculateBottomPadding() else 0.dp
+            ),
         ) {
+            composable(Screen.Login.route) {
+                LoginScreen(
+                    onNavigateToRegister = {
+                        navController.navigate(Screen.Register.route)
+                    },
+                    onLoginSuccess = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable(Screen.Register.route) {
+                RegisterScreen(
+                    onNavigateToLogin = {
+                        navController.popBackStack()
+                    },
+                    onRegisterSuccess = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
             composable(Screen.Home.route) {
                 HomeScreen(
                     onNavigateToFirmar = { navController.navigate(Screen.SubirPdf.route) },
@@ -138,7 +177,11 @@ fun AppNavGraph(
                     onNavigateToConfiguracionFirma = { navController.navigate(Screen.ConfiguracionFirma.route) },
                     onNavigateToTSL = { navController.navigate(Screen.TslConfig.route) },
                     onNavigateToLogs = { navController.navigate(Screen.LogsAuditoria.route) },
-                    onLogout = { /* Placeholder: No implementado aún */ }
+                    onLogout = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
                 )
             }
 

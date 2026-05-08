@@ -85,6 +85,7 @@ fun ValidarPdfScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(White)
+                    .navigationBarsPadding()
                     .padding(24.dp)
             ) {
                 ACJPrimaryButton(

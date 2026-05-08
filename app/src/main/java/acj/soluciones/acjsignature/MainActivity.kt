@@ -23,9 +23,11 @@ class MainActivity : ComponentActivity() {
     /**
      * Inicializa la actividad y establece el contenido de la interfaz de usuario.
      */
+    @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
+        // Solución temporal para el crash de IndicationNodeFactory con Material 2/3 mixtos
+        androidx.compose.foundation.ComposeFoundationFlags.isNonComposedClickableEnabled = true
         enableEdgeToEdge()
         setContent {
             ACJSignatureTheme {

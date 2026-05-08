@@ -99,17 +99,32 @@ class CertificadosViewModel @Inject constructor(
             _state.update { it.copy(showPasswordDialog = false, isLoading = true) }
             logger.info("Validando contraseña del certificado...")
 
-            // Verificar la contraseña antes de pedir el PIN
-            val isValid = withContext(Dispatchers.IO) {
+            // Verificar la contraseña y extraer el CN antes de pedir el PIN/importar
+            val cn = withContext(Dispatchers.IO) {
                 runCatching {
                     val ks = java.security.KeyStore.getInstance("PKCS12")
                     ks.load(java.io.ByteArrayInputStream(bytes), password.toCharArray())
-                }.isSuccess
+                    
+                    var foundCn: String? = null
+                    val aliases = ks.aliases()
+                    while (aliases.hasMoreElements()) {
+                        val a = aliases.nextElement()
+                        if (ks.isKeyEntry(a)) {
+                            val cert = ks.getCertificate(a) as? java.security.cert.X509Certificate
+                            if (cert != null) {
+                                foundCn = com.acj.firma.lib.LibUtilitario.extractField(cert, "2.5.4.3")
+                                break
+                            }
+                        }
+                    }
+                    foundCn ?: "Desconocido"
+                }.getOrNull()
             }
 
-            if (isValid) {
+            if (cn != null) {
                 logger.info("Contraseña correcta. Iniciando importación.")
                 val alias = "cert_${System.currentTimeMillis()}"
+                logger.info("importando certificado $cn como $alias")
                 when (val result = firmaRepository.importarCertificado(bytes, password, alias)) {
                     is Result.Success -> {
                         logger.info("Importación exitosa de $alias")

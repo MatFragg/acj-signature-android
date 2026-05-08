@@ -245,7 +245,7 @@ fun CertificadosScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(top = padding.calculateTopPadding())
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp),
         ) {

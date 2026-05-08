@@ -201,7 +201,7 @@ fun ValidacionScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(top = padding.calculateTopPadding())
                 .padding(horizontal = 20.dp),
         ) {
             // ── Header ───────────────────────────────────

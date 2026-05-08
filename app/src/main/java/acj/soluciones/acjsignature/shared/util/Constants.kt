@@ -9,6 +9,9 @@ package acj.soluciones.acjsignature.shared.util
  * @version 1.0
  */
 object Constants {
+    const val BASE_URL = "http://10.0.2.2:8067/"
+    //const val BASE_URL = "http://localhost:8067/"
+    const val SESSION_DATASTORE_NAME = "acj_session"
     const val MAX_FILE_SIZE_BYTES = 25L * 1024 * 1024 // 25 MB
     const val DIR_DOCUMENTOS = "documentos"
     const val DIR_ORIGINALES = "originales"

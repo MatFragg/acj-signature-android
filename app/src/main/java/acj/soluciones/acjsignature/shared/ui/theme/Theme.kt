@@ -63,7 +63,7 @@ private val DarkColorScheme = darkColorScheme(
  */
 @Composable
 fun ACJSignatureTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit,
 ) {
 

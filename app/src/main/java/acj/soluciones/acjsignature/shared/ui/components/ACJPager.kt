@@ -137,10 +137,11 @@ fun ACJPager(
                         }
                     ),
                     singleLine = true,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Magenta,
                         unfocusedBorderColor = DeepPurple.copy(alpha = 0.3f),
-                        containerColor = Color.Transparent
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
                     )
                 )
                 

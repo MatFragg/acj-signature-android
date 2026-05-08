@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import com.acj.firma.lib.LibUtilitario
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import java.security.Security
 import acj.soluciones.acjsignature.data.local.datastore.ConfigDataStore
@@ -51,6 +52,15 @@ class FirmaRepositoryImpl @Inject constructor(
 ) : FirmaRepository {
 
     init {
+        // Conectar logs de la biblioteca con el AppLogger de la app
+        LibUtilitario.setLogCallback { type, content ->
+            when (type) {
+                LibUtilitario.TYPE_ERROR -> logger.error(content)
+                LibUtilitario.TYPE_WARNING -> logger.warning(content)
+                else -> logger.info(content)
+            }
+        }
+
         // Registro de proveedores de seguridad y cargadores de recursos
         if (Security.getProvider("BC") == null) {
             Security.addProvider(BouncyCastleProvider())
@@ -89,7 +99,7 @@ class FirmaRepositoryImpl @Inject constructor(
                 p12StorageManager.saveCertificate(alias, bytes, password)
             }.fold(
                 onSuccess = { 
-                    logger.info("Certificado importado: $alias")
+                    logger.info("Certificado guardado exitosamente como $alias")
                     Result.Success(Unit) 
                 },
                 onFailure = { 
@@ -155,13 +165,6 @@ class FirmaRepositoryImpl @Inject constructor(
                     documentoFirma
                 }
 
-                logger.info("Certificado seleccionado para firmar: ${finalDoc.aliasCertificado}")
-                logger.info("La TSL está correcta.")
-                logger.info("TSL dentro de fecha válida.")
-                
-                val sdf = SimpleDateFormat("dd/MM/yyyy hh:mm:ss a", Locale.getDefault())
-                logger.info("Validando certificados ${sdf.format(Date())}")
-
                 val params = finalDoc.toParameters(context)
                 
                 val certFile = p12StorageManager.getCertificateFile(finalDoc.aliasCertificado)
@@ -175,7 +178,6 @@ class FirmaRepositoryImpl @Inject constructor(
                 val controller = FirmaController()
                 controller.firmarDocumento(params)
                 
-                logger.info("Certificado correcto.")
                 logger.info("Certificados correctos.")
 
                 val nombreSalida = "${finalDoc.archivo.nameWithoutExtension}" +
