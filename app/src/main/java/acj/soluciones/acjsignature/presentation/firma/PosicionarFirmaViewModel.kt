@@ -217,12 +217,12 @@ class PosicionarFirmaViewModel @Inject constructor(
      * @param anchoVisible Ancho del sello de firma.
      * @param altoVisible Alto del sello de firma.
      */
-    fun solicitarFirma(certificado: Certificado, pdfX: Int, pdfY: Int, anchoVisible: Int, altoVisible: Int) {
+    fun solicitarFirma(certificado: Certificado, pdfX: Int, pdfY: Int, anchoVisible: Int, altoVisible: Int, destinationUri: android.net.Uri) {
         logger.info("Solicitud de firma iniciada por el usuario en página ${_state.value.currentPage}")
-        firmarDocumento(certificado, pdfX, pdfY, anchoVisible, altoVisible)
+        firmarDocumento(certificado, pdfX, pdfY, anchoVisible, altoVisible, destinationUri)
     }
 
-    private fun firmarDocumento(certificado: Certificado, pdfX: Int, pdfY: Int, anchoVisible: Int, altoVisible: Int) {
+    private fun firmarDocumento(certificado: Certificado, pdfX: Int, pdfY: Int, anchoVisible: Int, altoVisible: Int, destinationUri: android.net.Uri) {
         val currentState = _state.value
         val archivo = currentState.archivoPdf ?: return
 
@@ -260,13 +260,25 @@ class PosicionarFirmaViewModel @Inject constructor(
             when (val result = firmarDocumentoUseCase(documentoFirma)) {
                 is Result.Success -> {
                     logger.info("Firma criptográfica completada con éxito para ${archivo.name}")
-                    // Update the Documento repository with the signed file path
-                    documentoRepository.actualizarEstado(
-                        id = currentState.documentoId,
-                        estado = "FIRMADO",
-                        rutaFirmado = result.data.archivoFirmado.absolutePath
-                    )
-                    _state.update { it.copy(isSigning = false, firmaExitosa = true) }
+                    
+                    try {
+                        context.contentResolver.openOutputStream(destinationUri)?.use { outputStream ->
+                            result.data.archivoFirmado.inputStream().use { inputStream ->
+                                inputStream.copyTo(outputStream)
+                            }
+                        }
+                        
+                        // Update the Documento repository with the signed file path
+                        documentoRepository.actualizarEstado(
+                            id = currentState.documentoId,
+                            estado = "FIRMADO",
+                            rutaFirmado = result.data.archivoFirmado.absolutePath
+                        )
+                        _state.update { it.copy(isSigning = false, firmaExitosa = true) }
+                    } catch (e: Exception) {
+                        logger.error("Error al exportar el archivo firmado a la URI seleccionada", e)
+                        _state.update { it.copy(isSigning = false, error = "Error al guardar el archivo: ${e.message}") }
+                    }
                 }
                 is Result.Error -> {
                     logger.error("Firma fallida para ${archivo.name}: ${result.message}", result.cause)

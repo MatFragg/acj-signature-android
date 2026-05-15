@@ -28,6 +28,9 @@ import acj.soluciones.acjsignature.presentation.logs.LogsAuditoriaScreen
 import acj.soluciones.acjsignature.presentation.tsl.TSLScreen
 import acj.soluciones.acjsignature.presentation.login.LoginScreen
 import acj.soluciones.acjsignature.presentation.register.RegisterScreen
+import acj.soluciones.acjsignature.presentation.forgotpassword.ForgotPasswordScreen
+import acj.soluciones.acjsignature.presentation.resetpassword.ResetPasswordScreen
+import acj.soluciones.acjsignature.presentation.changepassword.ChangePasswordScreen
 import acj.soluciones.acjsignature.presentation.main.MainViewModel
 import acj.soluciones.acjsignature.shared.ui.components.ACJBottomNavBar
 
@@ -94,6 +97,12 @@ fun AppNavGraph(
                     onNavigateToRegister = {
                         navController.navigate(Screen.Register.route)
                     },
+                    onNavigateToVerifyOtp = { email ->
+                        navController.navigate(Screen.VerifyOtp.createRoute(email))
+                    },
+                    onNavigateToForgotPassword = {
+                        navController.navigate(Screen.ForgotPassword.route)
+                    },
                     onLoginSuccess = {
                         navController.navigate(Screen.Home.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
@@ -107,13 +116,60 @@ fun AppNavGraph(
                     onNavigateToLogin = {
                         navController.popBackStack()
                     },
-                    onRegisterSuccess = {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
+                    onRegisterSuccess = { email ->
+                        navController.navigate(Screen.VerifyOtp.createRoute(email)) {
+                            popUpTo(Screen.Register.route) { inclusive = true }
                         }
                     }
                 )
             }
+
+            composable(
+                route = Screen.VerifyOtp.route,
+                arguments = listOf(navArgument("email") { type = NavType.StringType })
+            ) {
+                acj.soluciones.acjsignature.presentation.verifyotp.VerifyOtpScreen(
+                    onNavigateToHome = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            composable(Screen.ForgotPassword.route) {
+                ForgotPasswordScreen(
+                    onNavigateToReset = { email ->
+                        navController.navigate(Screen.ResetPassword.createRoute(email)) {
+                            popUpTo(Screen.ForgotPassword.route) { inclusive = true }
+                        }
+                    },
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = Screen.ResetPassword.route,
+                arguments = listOf(navArgument("email") { type = NavType.StringType })
+            ) {
+                ResetPasswordScreen(
+                    onNavigateToLogin = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable(Screen.ChangePassword.route) {
+                ChangePasswordScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
             composable(Screen.Home.route) {
                 HomeScreen(
                     onNavigateToFirmar = { navController.navigate(Screen.SubirPdf.route) },
@@ -177,6 +233,7 @@ fun AppNavGraph(
                     onNavigateToConfiguracionFirma = { navController.navigate(Screen.ConfiguracionFirma.route) },
                     onNavigateToTSL = { navController.navigate(Screen.TslConfig.route) },
                     onNavigateToLogs = { navController.navigate(Screen.LogsAuditoria.route) },
+                    onNavigateToChangePassword = { navController.navigate(Screen.ChangePassword.route) },
                     onLogout = {
                         navController.navigate(Screen.Login.route) {
                             popUpTo(0) { inclusive = true }

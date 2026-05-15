@@ -30,6 +30,7 @@ fun AjustesScreen(
     onNavigateToConfiguracionFirma: () -> Unit,
     onNavigateToTSL: () -> Unit,
     onNavigateToLogs: () -> Unit,
+    onNavigateToChangePassword: () -> Unit,
     onLogout: () -> Unit,
     viewModel: AjustesViewModel = hiltViewModel()
 ) {
@@ -71,11 +72,12 @@ fun AjustesScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             // Menú de opciones
+
             ACJFeatureCard(
-                title = "Acerca de ACJSignature",
-                description = "Versión, términos y privacidad",
-                icon = Icons.Default.Info,
-                onClick = onNavigateToAcercaDe,
+                title = "Cambiar Contraseña",
+                description = "Actualiza tus credenciales de acceso",
+                icon = Icons.Default.Password,
+                onClick = onNavigateToChangePassword,
                 iconBgColor = White
             )
 
@@ -106,6 +108,16 @@ fun AjustesScreen(
                 description = "Historial de acciones y firmas",
                 icon = Icons.Default.ListAlt,
                 onClick = onNavigateToLogs,
+                iconBgColor = White
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ACJFeatureCard(
+                title = "Acerca de ACJSignature",
+                description = "Versión, términos y privacidad",
+                icon = Icons.Default.Info,
+                onClick = onNavigateToAcercaDe,
                 iconBgColor = White
             )
 

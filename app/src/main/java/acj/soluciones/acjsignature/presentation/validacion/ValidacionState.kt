@@ -6,7 +6,7 @@ import acj.soluciones.acjsignature.domain.model.EstadisticasDocumentos
 /**
  * Estado que representa la información de la pantalla de historial y validación de documentos.
  *
- * @property documentos Lista de documentos (firmados o pendientes) que cumplen con el filtro de búsqueda.
+ * @property documentos Lista de documentos firmados que cumplen con el filtro de búsqueda.
  * @property estadisticas Resumen numérico del estado del repositorio de documentos.
  * @property searchQuery Texto ingresado por el usuario para filtrar el historial.
  * @property isLoading Indica si se está consultando la base de datos o procesando un archivo.

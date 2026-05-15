@@ -1,8 +1,11 @@
 package acj.soluciones.acjsignature.presentation.tsl
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +28,7 @@ fun TSLScreen(
     viewModel: TSLViewModel = hiltViewModel()
 ) {
     val usarTslPrueba by viewModel.usarTslPrueba.collectAsStateWithLifecycle()
+    val tslUrl by viewModel.tslUrl.collectAsStateWithLifecycle()
     val guardado by viewModel.guardado.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -73,39 +77,95 @@ fun TSLScreen(
 
             Card(
                 colors = CardDefaults.cardColors(containerColor = White),
-                elevation = CardDefaults.cardElevation(2.dp)
+                elevation = CardDefaults.cardElevation(2.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(16.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Usar TSL de prueba",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = DeepPurple,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "Activa validaciones contra el entorno de pruebas de INDECOPI.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextMuted
+                            )
+                        }
+                        Switch(
+                            checked = usarTslPrueba,
+                            onCheckedChange = { 
+                                viewModel.onUsarTslPruebaChanged(it)
+                                // Limpiar cache para forzar recarga si cambia el entorno
+                                com.acj.firma.util.Tsl.limpiarCache(context)
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Magenta,
+                                checkedTrackColor = PinkLight
+                            )
+                        )
+                    }
+
+                    if (usarTslPrueba) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Divider(color = DividerLight)
+                        Spacer(modifier = Modifier.height(16.dp))
+
                         Text(
-                            text = "Usar TSL de prueba",
-                            style = MaterialTheme.typography.bodyLarge,
+                            text = "Dirección URL de TSL de Prueba",
+                            style = MaterialTheme.typography.bodyMedium,
                             color = DeepPurple,
                             fontWeight = FontWeight.SemiBold
                         )
-                        Text(
-                            text = "Activa validaciones contra el entorno de pruebas de INDECOPI.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = TextMuted
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = tslUrl,
+                            onValueChange = { 
+                                viewModel.onTslUrlChanged(it)
+                                com.acj.firma.util.Tsl.limpiarCache(context)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("https://...", color = TextMuted) },
+                            leadingIcon = { Icon(Icons.Filled.Link, contentDescription = null, tint = TextMuted) },
+                            trailingIcon = {
+                                if (tslUrl.isNotEmpty()) {
+                                    IconButton(onClick = { viewModel.onTslUrlChanged("") }) {
+                                        Icon(Icons.Filled.Clear, contentDescription = "Limpiar", tint = TextMuted)
+                                    }
+                                }
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = BorderLight,
+                                focusedBorderColor = Magenta,
+                            ),
+                            singleLine = true
                         )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            SuggestionChip(
+                                onClick = { 
+                                    viewModel.onTslUrlChanged("https://nodoyuna4.github.io/pki/tsl/tsl2026.xml")
+                                    com.acj.firma.util.Tsl.limpiarCache(context)
+                                },
+                                label = { Text("Restablecer por defecto (INDECOPI Pruebas)") }
+                            )
+                        }
                     }
-                    Switch(
-                        checked = usarTslPrueba,
-                        onCheckedChange = { 
-                            viewModel.onUsarTslPruebaChanged(it)
-                            // Limpiar cache para forzar recarga si cambia el entorno
-                            com.acj.firma.util.Tsl.limpiarCache(context)
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Magenta,
-                            checkedTrackColor = PinkLight
-                        )
-                    )
                 }
             }
 

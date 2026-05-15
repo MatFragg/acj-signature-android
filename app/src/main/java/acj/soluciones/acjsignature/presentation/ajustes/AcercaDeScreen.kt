@@ -81,7 +81,7 @@ fun AcercaDeScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             Text(
-                text = "© 2026 ACJ Soluciones Digitales\nTodos los derechos reservados",
+                text = "© 2026 ACJ Soluciones \nTodos los derechos reservados",
                 style = MaterialTheme.typography.bodySmall,
                 color = TextMuted,
                 textAlign = TextAlign.Center,

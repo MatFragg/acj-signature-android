@@ -8,6 +8,7 @@ import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import acj.soluciones.acjsignature.data.local.db.EstadoDocumento
 import acj.soluciones.acjsignature.domain.model.DocumentoFirmado
 import acj.soluciones.acjsignature.domain.repository.DocumentoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -43,8 +45,11 @@ class ValidacionViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ValidacionUiState())
 
     private val documentos = _searchQuery.flatMapLatest { query ->
-        if (query.isBlank()) documentoRepository.getDocumentos()
+        val flow = if (query.isBlank()) documentoRepository.getDocumentos()
         else documentoRepository.buscar(query)
+        flow.map { list ->
+            list.filter { it.estado == EstadoDocumento.FIRMADO }
+        }
     }
 
     val state = combine(

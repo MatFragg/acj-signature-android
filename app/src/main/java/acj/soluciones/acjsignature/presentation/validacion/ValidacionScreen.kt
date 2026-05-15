@@ -234,8 +234,8 @@ fun ValidacionScreen(
                 ) {
                     ACJStatsCard(
                         title = "Total Documentos",
-                        value = "${state.estadisticas.total}",
-                        subtitle = "documentos registrados",
+                        value = "${state.estadisticas.firmados}",
+                        subtitle = "documentos firmados",
                         modifier = Modifier.weight(1f),
                     )
                     ACJStatsCard(

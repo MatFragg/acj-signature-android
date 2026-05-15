@@ -6,9 +6,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -96,8 +99,27 @@ fun PosicionarFirmaScreen(
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
 
+    // Control de visibilidad del sello (invisible inicialmente)
+    var isStampVisible by remember { mutableStateOf(false) }
+
     // Modal para el certificado si hay multiples
     var showCertDialog by remember { mutableStateOf(false) }
+    var pendingCert by remember { mutableStateOf<Certificado?>(null) }
+
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        if (uri != null && pendingCert != null) {
+            val margin = safeMarginPdfPts.toInt()
+            val pdfX = ((offsetX / containerSize.width) * state.pdfPageWidth).roundToInt()
+                .coerceIn(margin, (state.pdfPageWidth - state.sigIdealWidth - margin).coerceAtLeast(margin))
+            val pdfY = ((offsetY / containerSize.height) * state.pdfPageHeight).roundToInt()
+                .coerceIn(margin, (state.pdfPageHeight - state.sigIdealHeight - margin).coerceAtLeast(margin))
+            
+            viewModel.solicitarFirma(pendingCert!!, pdfX, pdfY, state.sigIdealWidth, state.sigIdealHeight, uri)
+        }
+        pendingCert = null
+    }
 
     LaunchedEffect(docId) {
         viewModel.loadDocument(docId)
@@ -120,13 +142,9 @@ fun PosicionarFirmaScreen(
             onDismiss = { showCertDialog = false },
             onSelect = { cert: Certificado ->
                 showCertDialog = false
-                val margin = safeMarginPdfPts.toInt()
-                val pdfX = ((offsetX / containerSize.width) * state.pdfPageWidth).roundToInt()
-                    .coerceIn(margin, (state.pdfPageWidth - state.sigIdealWidth - margin).coerceAtLeast(margin))
-                val pdfY = ((offsetY / containerSize.height) * state.pdfPageHeight).roundToInt()
-                    .coerceIn(margin, (state.pdfPageHeight - state.sigIdealHeight - margin).coerceAtLeast(margin))
-                
-                viewModel.solicitarFirma(cert, pdfX, pdfY, state.sigIdealWidth, state.sigIdealHeight)
+                pendingCert = cert
+                val suggestedName = "${state.archivoPdf?.nameWithoutExtension ?: "documento"}_firmado.pdf"
+                createDocumentLauncher.launch(suggestedName)
             }
         )
     }
@@ -154,7 +172,7 @@ fun PosicionarFirmaScreen(
                     // Confirm
                     ACJPrimaryButton(
                         text = "Siguiente Paso",
-                        enabled = !state.isLoading && !state.isSigning && state.certificadosDisponibles.isNotEmpty(),
+                        enabled = !state.isLoading && !state.isSigning && state.certificadosDisponibles.isNotEmpty() && isStampVisible,
                         onClick = {
                             showCertDialog = true
                         },
@@ -191,6 +209,18 @@ fun PosicionarFirmaScreen(
                             .padding(16.dp)
                             .clip(RoundedCornerShape(4.dp))
                             .background(White)
+                            .pointerInput(isStampVisible) {
+                                if (!isStampVisible) {
+                                    detectTapGestures {
+                                        isStampVisible = true
+                                        // Aseguramos que se posicione en el centro al aparecer por primera vez
+                                        if (containerSize.width > 0) {
+                                            offsetX = maxOffsetX / 2f
+                                            offsetY = maxOffsetY / 2f
+                                        }
+                                    }
+                                }
+                            }
                     ) {
                         Image(
                             bitmap = state.currentPageBitmap!!.asImageBitmap(),
@@ -212,34 +242,36 @@ fun PosicionarFirmaScreen(
                         )
 
                         // Draggable Signature Box constraint to bounds
-                        Box(
-                            modifier = Modifier
-                                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-                                .size(boxWidthDp, boxHeightDp)
-                                .border(2.dp, Color.Red, RoundedCornerShape(4.dp))
-                                .background(Color.Red.copy(alpha = 0.05f))
-                                .pointerInput(Unit) {
-                                    detectDragGestures { change, dragAmount ->
-                                        change.consume()
-                                        // Constraints para no salir del PDF
-                                        val newX = offsetX + dragAmount.x
-                                        val newY = offsetY + dragAmount.y
-                                        if (containerSize.width > 0 && containerSize.height > 0) {
-                                            offsetX = newX.coerceIn(minOffset, maxOffsetX)
-                                            offsetY = newY.coerceIn(minOffset, maxOffsetY)
+                        if (isStampVisible) {
+                            Box(
+                                modifier = Modifier
+                                    .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                                    .size(boxWidthDp, boxHeightDp)
+                                    .border(2.dp, Color.Red, RoundedCornerShape(4.dp))
+                                    .background(Color.Red.copy(alpha = 0.05f))
+                                    .pointerInput(Unit) {
+                                        detectDragGestures { change, dragAmount ->
+                                            change.consume()
+                                            // Constraints para no salir del PDF
+                                            val newX = offsetX + dragAmount.x
+                                            val newY = offsetY + dragAmount.y
+                                            if (containerSize.width > 0 && containerSize.height > 0) {
+                                                offsetX = newX.coerceIn(minOffset, maxOffsetX)
+                                                offsetY = newY.coerceIn(minOffset, maxOffsetY)
+                                            }
                                         }
-                                    }
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                                Text(
-                                    state.firmaNombre.ifBlank { "FIRMA DIGITAL" }.uppercase(),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.Red,
-                                    maxLines = 1,
-                                )
-                                Text("Arrastrar para mover", style = MaterialTheme.typography.bodySmall.copy(fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.8), color = Color.Red.copy(0.7f))
+                                    },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                                    Text(
+                                        state.firmaNombre.ifBlank { "FIRMA DIGITAL" }.uppercase(),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.Red,
+                                        maxLines = 1,
+                                    )
+                                    Text("Arrastrar para mover", style = MaterialTheme.typography.bodySmall.copy(fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.8), color = Color.Red.copy(0.7f))
+                                }
                             }
                         }
                     }

@@ -11,5 +11,6 @@ data class LoginUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val isSuccess: Boolean = false,
-    val rememberMe: Boolean = false
+    val rememberMe: Boolean = false,
+    val requiresVerification: Boolean = false
 )

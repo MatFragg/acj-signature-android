@@ -213,7 +213,8 @@ class FirmaRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             runCatching {
                 logger.info("Validando documento: ${archivoPdf.name}")
-                val tslUrl = getTslUrl()
+                // Para validación de documentos ya firmados, siempre se debe usar la TSL de producción (Indecopi)
+                val tslUrl = TSL_PRODUCTION_URL
                 
                 val tsl = Tsl(tslUrl, 24 * 60 * 60 * 1000L,
                     /* verificar = */ true, context)
@@ -244,9 +245,9 @@ class FirmaRepositoryImpl @Inject constructor(
     private suspend fun getTslUrl(): String {
         val config = configDataStore.configuracion.first()
         return if (config.usarTslPrueba) {
-            "https://nodoyuna4.github.io/pki/tsl/tsl2026.xml"
+            config.tslUrl.ifBlank { "https://nodoyuna4.github.io/pki/tsl/tsl2026.xml" }
         } else {
-            "https://iofe.indecopi.gob.pe/TSL/tsl-pe.xml"
+            TSL_PRODUCTION_URL
         }
     }
 
@@ -271,4 +272,8 @@ class FirmaRepositoryImpl @Inject constructor(
                 }
             )
         }
+
+    companion object {
+        private const val TSL_PRODUCTION_URL = "https://iofe.indecopi.gob.pe/TSL/tsl-pe.xml"
+    }
 }

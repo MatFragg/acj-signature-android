@@ -60,7 +60,19 @@ fun ValidarPdfScreen(
     }
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
+        contract = object : ActivityResultContracts.OpenDocument() {
+            override fun createIntent(context: android.content.Context, input: Array<String>): android.content.Intent {
+                val intent = super.createIntent(context, input)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    val downloadsUri = android.provider.DocumentsContract.buildRootUri(
+                        "com.android.providers.downloads.documents",
+                        "downloads"
+                    )
+                    intent.putExtra(android.provider.DocumentsContract.EXTRA_INITIAL_URI, downloadsUri)
+                }
+                return intent
+            }
+        }
     ) { uri: Uri? ->
         uri?.let {
             var name = "documento.pdf"

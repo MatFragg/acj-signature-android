@@ -85,6 +85,18 @@ sealed class Screen(
 
     data object Login : Screen(route = "login", title = "Iniciar Sesión")
     data object Register : Screen(route = "register", title = "Crear Cuenta")
+    
+    data object VerifyOtp : Screen(route = "verify_otp/{email}", title = "Verificar OTP") {
+        fun createRoute(email: String) = "verify_otp/$email"
+    }
+
+    data object ForgotPassword : Screen(route = "forgot_password", title = "Recuperar Contraseña")
+    
+    data object ResetPassword : Screen(route = "reset_password/{email}", title = "Restablecer Contraseña") {
+        fun createRoute(email: String) = "reset_password/$email"
+    }
+
+    data object ChangePassword : Screen(route = "change_password", title = "Cambiar Contraseña")
 
     companion object {
         val bottomNavItems = listOf(Home, DocumentosFirmados, Ajustes)

@@ -17,6 +17,10 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import acj.soluciones.acjsignature.data.remote.dto.response.OtpResponse
+import acj.soluciones.acjsignature.data.remote.dto.request.VerifyOtpRequest
+import acj.soluciones.acjsignature.data.remote.dto.request.ResendOtpRequest
+
 /**
  * Implementación concreta del repositorio de autenticación y consulta pública.
  */
@@ -41,14 +45,42 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun register(request: RegisterRequest): Result<AuthResponse> {
+    override suspend fun register(request: RegisterRequest): Result<OtpResponse> {
         return try {
             val response = apiService.register(request)
+            if (response.success && response.data != null) {
+                Result.Success(response.data)
+            } else {
+                Result.Error(response.message ?: "Error al registrar el usuario.")
+            }
+        } catch (e: Exception) {
+            Result.Error(parseError(e))
+        }
+    }
+
+    override suspend fun verifyOtp(email: String, otp: String): Result<AuthResponse> {
+        return try {
+            val request = VerifyOtpRequest(email, otp)
+            val response = apiService.verifyOtp(request)
             if (response.success && response.data != null) {
                 sessionManager.saveSession(response.data)
                 Result.Success(response.data)
             } else {
-                Result.Error(response.message ?: "Error al registrar el usuario.")
+                Result.Error(response.message ?: "Error al verificar OTP.")
+            }
+        } catch (e: Exception) {
+            Result.Error(parseError(e))
+        }
+    }
+
+    override suspend fun resendOtp(email: String): Result<OtpResponse> {
+        return try {
+            val request = ResendOtpRequest(email)
+            val response = apiService.resendOtp(request)
+            if (response.success && response.data != null) {
+                Result.Success(response.data)
+            } else {
+                Result.Error(response.message ?: "Error al reenviar OTP.")
             }
         } catch (e: Exception) {
             Result.Error(parseError(e))
@@ -63,6 +95,46 @@ class AuthRepositoryImpl @Inject constructor(
                 Result.Success(response.data)
             } else {
                 Result.Error(response.message ?: "No se encontró información para el DNI ingresado.")
+            }
+        } catch (e: Exception) {
+            Result.Error(parseError(e))
+        }
+    }
+
+    override suspend fun forgotPassword(email: String): Result<OtpResponse> {
+        return try {
+            val request = acj.soluciones.acjsignature.data.remote.dto.request.ForgotPasswordRequest(email)
+            val response = apiService.forgotPassword(request)
+            if (response.success && response.data != null) {
+                Result.Success(response.data)
+            } else {
+                Result.Error(response.message ?: "Error al solicitar recuperación.")
+            }
+        } catch (e: Exception) {
+            Result.Error(parseError(e))
+        }
+    }
+
+    override suspend fun resetPassword(request: acj.soluciones.acjsignature.data.remote.dto.request.ResetPasswordRequest): Result<String> {
+        return try {
+            val response = apiService.resetPassword(request)
+            if (response.success) {
+                Result.Success(response.data ?: response.message ?: "Contraseña restablecida exitosamente")
+            } else {
+                Result.Error(response.message ?: "Error al restablecer contraseña.")
+            }
+        } catch (e: Exception) {
+            Result.Error(parseError(e))
+        }
+    }
+
+    override suspend fun changePassword(request: acj.soluciones.acjsignature.data.remote.dto.request.ChangePasswordRequest): Result<String> {
+        return try {
+            val response = apiService.changePassword(request)
+            if (response.success) {
+                Result.Success(response.data ?: response.message ?: "Contraseña cambiada exitosamente")
+            } else {
+                Result.Error(response.message ?: "Error al cambiar la contraseña.")
             }
         } catch (e: Exception) {
             Result.Error(parseError(e))

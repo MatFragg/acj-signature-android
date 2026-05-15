@@ -88,7 +88,11 @@ class LoginViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoading = false, isSuccess = true) }
                 }
                 is Result.Error -> {
-                    _uiState.update { it.copy(isLoading = false, error = result.message) }
+                    if (result.message.contains("Por favor verifica tu email") || result.message.contains("verifica tu email antes de iniciar sesión")) {
+                        _uiState.update { it.copy(isLoading = false, requiresVerification = true) }
+                    } else {
+                        _uiState.update { it.copy(isLoading = false, error = result.message) }
+                    }
                 }
                 is Result.Loading -> {
                     // No debería ocurrir directamente desde el caso de uso

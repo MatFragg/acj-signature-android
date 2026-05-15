@@ -19,6 +19,9 @@ class TSLViewModel @Inject constructor(
     private val _usarTslPrueba = MutableStateFlow(false)
     val usarTslPrueba = _usarTslPrueba.asStateFlow()
 
+    private val _tslUrl = MutableStateFlow("https://nodoyuna4.github.io/pki/tsl/tsl2026.xml")
+    val tslUrl = _tslUrl.asStateFlow()
+
     private val _guardado = MutableStateFlow(false)
     val guardado = _guardado.asStateFlow()
 
@@ -26,6 +29,7 @@ class TSLViewModel @Inject constructor(
         viewModelScope.launch {
             configDataStore.configuracion.collect { config ->
                 _usarTslPrueba.value = config.usarTslPrueba
+                _tslUrl.value = config.tslUrl
             }
         }
     }
@@ -34,10 +38,19 @@ class TSLViewModel @Inject constructor(
         _usarTslPrueba.value = value
     }
 
+    fun onTslUrlChanged(value: String) {
+        _tslUrl.value = value
+    }
+
     fun guardar() {
         viewModelScope.launch {
             val current = configDataStore.configuracion.first()
-            configDataStore.guardar(current.copy(usarTslPrueba = _usarTslPrueba.value))
+            configDataStore.guardar(
+                current.copy(
+                    usarTslPrueba = _usarTslPrueba.value,
+                    tslUrl = _tslUrl.value
+                )
+            )
             _guardado.value = true
         }
     }

@@ -78,6 +78,8 @@ import acj.soluciones.acjsignature.shared.ui.theme.White
 @Composable
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
+    onNavigateToVerifyOtp: (String) -> Unit,
+    onNavigateToForgotPassword: () -> Unit,
     onLoginSuccess: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
@@ -91,6 +93,12 @@ fun LoginScreen(
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             onLoginSuccess()
+        }
+    }
+
+    LaunchedEffect(uiState.requiresVerification) {
+        if (uiState.requiresVerification) {
+            onNavigateToVerifyOtp(uiState.email)
         }
     }
 
@@ -294,15 +302,17 @@ fun LoginScreen(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextBody
                                 )
-                            }
+                            }*/
+                            
+                            Spacer(modifier = Modifier.weight(1f))
                             
                             Text(
                                 text = "¿Olvidó su contraseña?",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Magenta,
                                 fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.clickable { /* Placeholder */ }
-                            )*/
+                                modifier = Modifier.clickable { onNavigateToForgotPassword() }
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(24.dp))

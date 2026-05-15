@@ -34,6 +34,7 @@ data class ConfiguracionFirma(
     val incluirCargo: Boolean = true,
     val incluirTelefono: Boolean = false,
     val usarTslPrueba: Boolean = false,
+    val tslUrl: String = "https://nodoyuna4.github.io/pki/tsl/tsl2026.xml",
     val nombreUsuario: String = "",
     val cargoUsuario: String = "",
     val empresaUsuario: String = "",
@@ -63,6 +64,7 @@ class ConfigDataStore @Inject constructor(
         val EMPRESA_USUARIO = stringPreferencesKey("empresa_usuario")
         val TELEFONO_USUARIO = stringPreferencesKey("telefono_usuario")
         val USAR_TSL_PRUEBA = booleanPreferencesKey("usar_tsl_prueba")
+        val TSL_URL = stringPreferencesKey("tsl_url")
     }
 
     /**
@@ -79,6 +81,7 @@ class ConfigDataStore @Inject constructor(
             empresaUsuario = prefs[Keys.EMPRESA_USUARIO] ?: "",
             telefonoUsuario = prefs[Keys.TELEFONO_USUARIO] ?: "",
             usarTslPrueba = prefs[Keys.USAR_TSL_PRUEBA] ?: false,
+            tslUrl = prefs[Keys.TSL_URL] ?: "https://nodoyuna4.github.io/pki/tsl/tsl2026.xml",
         )
     }
 
@@ -98,6 +101,7 @@ class ConfigDataStore @Inject constructor(
             prefs[Keys.EMPRESA_USUARIO] = config.empresaUsuario
             prefs[Keys.TELEFONO_USUARIO] = config.telefonoUsuario
             prefs[Keys.USAR_TSL_PRUEBA] = config.usarTslPrueba
+            prefs[Keys.TSL_URL] = config.tslUrl
         }
     }
 
